@@ -1,8 +1,23 @@
 {
   "name": "rn-firebase-bridge",
+  "description": "React Native bridge to native Firebase SDK",
   "version": "0.0.1",
-  "keywords": "react-native",
+  "keywords": [
+      "react-native",
+      "firebase",
+      "firebase-bridge"
+  ],
   "main": "FirebaseBridge",
+  "license": "MIT",
+  "maintainers": [
+      {
+          "name": "Dave Coates"
+      }
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/davecoates/rn-firebase-bridge.git"
+  },
   "dependencies": {
   }
 }
