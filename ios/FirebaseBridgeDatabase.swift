@@ -1,9 +1,7 @@
 //
 //  FirebaseDatabase.swift
-//  FirebaseBridge
 //
 //  Created by Dave Coates on 4/06/2016.
-//  Copyright © 2016. All rights reserved.
 //
 
 import Firebase
