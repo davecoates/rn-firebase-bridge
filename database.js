@@ -91,7 +91,8 @@ const { DataEventTypes } = NativeFirebaseBridgeDatabase;
 
 export {
     DataEventTypes,
-}
+    DatabaseReference,
+};
 
 export default {
     reference() {
