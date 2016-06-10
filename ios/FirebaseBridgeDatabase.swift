@@ -26,25 +26,66 @@ class FirebaseBridgeDatabase: NSObject {
     ]
   }
   
-  @objc func on(databaseUrl: String?, eventType:FIRDataEventType) {
+  let snapshotCache = NSCache()
+  
+  func cacheSnapshotAndConvert(snapshot:FIRDataSnapshot) -> Dictionary<String, AnyObject> {
+    let snapshotUUID = NSUUID.init()
+    self.snapshotCache.setObject(snapshot, forKey: snapshotUUID.UUIDString)
+    
+    // This whole this is possibly a terrible idea..?
+    // Remove cached snapshot after a delay. Snapshot is retained
+    // so can perform further queries on it if desired.
+    let triggerTime = (Int64(NSEC_PER_SEC) * 10)
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, triggerTime), dispatch_get_main_queue(), { () -> Void in
+      self.snapshotCache.removeObjectForKey(snapshotUUID.UUIDString)
+    })
+    let body:Dictionary<String, AnyObject> = [
+      "ref": self.convertRef(snapshot.ref),
+      "value": snapshot.value ?? "",
+      "exists": snapshot.exists(),
+      "childrenCount": snapshot.childrenCount,
+      "uuid": snapshotUUID.UUIDString,
+    ]
+    return body
+  }
+  
+  @objc func childSnapshotForPath(snapshotUUID: String, path: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+      let childSnapshot = snapshot.childSnapshotForPath(path)
+      resolve(cacheSnapshotAndConvert(childSnapshot))
+    } else {
+      reject("snapshot_expired", "Data snapshot has expired", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }
+  }
+  
+  var databaseEventHandles = Dictionary<String, (FIRDatabaseReference, FIRDatabaseHandle)>();
+  
+  @objc func on(databaseUrl: String?, eventType:FIRDataEventType, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     var ref:FIRDatabaseReference = FIRDatabase.database().reference()
     if let url = databaseUrl {
       ref = FIRDatabase.database().referenceFromURL(url)
     }
-    ref.observeEventType(eventType, withBlock: { snapshot in
-      let body:Dictionary<String, AnyObject> = [
-        "url": snapshot.ref.description(),
-        "eventType": eventType.rawValue,
-        "value": snapshot.value ?? "",
-        "exists": snapshot.exists(),
-        "childrenCount": snapshot.childrenCount,
-      ]
+    let handleUUID = NSUUID.init()
+    resolve(handleUUID.UUIDString)
+    let handle = ref.observeEventType(eventType, withBlock: { snapshot in
       self.bridge.eventDispatcher().sendAppEventWithName(
-          "onDatabaseEvent", body: body)
-      print(snapshot)
-      }, withCancelBlock: { error in
-        print(error)
-    })
+          handleUUID.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
+      })
+    
+    self.databaseEventHandles[handleUUID.UUIDString] = (ref, handle)
+  }
+  
+  @objc func off(handleUUID:String) {
+    if let (ref, handle) = databaseEventHandles[handleUUID] {
+      ref.removeObserverWithHandle(handle)
+    }
+  }
+  
+  func convertRef(ref:FIRDatabaseReference) -> Dictionary<String, String> {
+    return [
+      "key": ref.key,
+      "locationUrl": ref.description()
+    ]
   }
   
   @objc func child(databaseUrl: String?, path:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
@@ -53,10 +94,7 @@ class FirebaseBridgeDatabase: NSObject {
       ref = FIRDatabase.database().referenceFromURL(url)
     }
     let nextRef = ref.child(path)
-    resolve([
-      "key": nextRef.key,
-      "locationUrl": nextRef.description()
-    ])
+    resolve(convertRef(nextRef));
   }
   
   @objc func childByAutoId(databaseUrl: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
@@ -65,10 +103,7 @@ class FirebaseBridgeDatabase: NSObject {
       ref = FIRDatabase.database().referenceFromURL(url)
     }
     let nextRef = ref.childByAutoId()
-    resolve([
-      "key": nextRef.key,
-      "locationUrl": nextRef.description()
-    ])
+    resolve(convertRef(nextRef));
   }
   
   @objc func setValue(databaseUrl:String, value:AnyObject) {

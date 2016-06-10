@@ -2,18 +2,6 @@ import { FirebaseBridgeDatabase as NativeFirebaseBridgeDatabase } from 'NativeMo
 
 import { NativeAppEventEmitter } from 'react-native';
 
-var subscription = NativeAppEventEmitter.addListener(
-  'onDatabaseEvent',
-  (data) => {
-      console.log(data);
-  }
-);
-
-
-const { DataEventTypes } = NativeFirebaseBridgeDatabase;
-
-console.log(DataEventTypes);
-
 class DatabaseReference {
 
     parentPromise: Promise;
@@ -51,11 +39,55 @@ class DatabaseReference {
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, value));
     }
 
-    on(eventType) {
-        return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(locationUrl, eventType));
+    on(eventType, cb) {
+        const p = this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(locationUrl, eventType))
+                .then(handleUUID => {
+                    console.log('handle!', handleUUID);
+                    const subscription = NativeAppEventEmitter.addListener(handleUUID, data => {
+                        const snapshot = new DataSnapshot(data);
+                        cb(snapshot);
+                    });
+                    return () => {
+                        subscription.remove();
+                        NativeFirebaseBridgeDatabase.off(handleUUID);
+                    };
+                });
+        return () => {
+            p.then(unsubscribe => unsubscribe());
+        };
     }
 }
+
+class DataSnapshot {
+
+    constructor(snapshot) {
+        this.snapshot = snapshot;
+        this._ref = new DatabaseReference(Promise.resolve(this.snapshot.ref));
+    }
+
+    childSnapshotForPath(path) {
+        console.log(this.snapshot.uuid);
+        return NativeFirebaseBridgeDatabase.childSnapshotForPath(this.snapshot.uuid, path);
+    }
+
+    ref() {
+        return this._ref;
+    }
+}
+
+
+var subscription = NativeAppEventEmitter.addListener(
+  'onDatabaseEvent',
+  (data) => {
+      console.log(data);
+      const snapshot = new DataSnapshot(data);
+      snapshot.childSnapshotForPath('children').then(console.log.bind(console, 'hah!')).catch(console.error.bind(console))
+      snapshot.ref().key().then(console.log.bind(console, 'key: '));
+  }
+);
+
+const { DataEventTypes } = NativeFirebaseBridgeDatabase;
 
 export {
     DataEventTypes,
