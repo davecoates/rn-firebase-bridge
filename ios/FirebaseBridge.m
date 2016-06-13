@@ -4,25 +4,44 @@
 @interface RCT_EXTERN_MODULE(FirebaseBridgeDatabase, NSObject)
 
 RCT_EXTERN_METHOD(on:(NSString)databaseUrl
-                  eventType:(int)eventType
+                  eventTypeString:(NSString)eventTypeString
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(off:(NSString)handleUUID)
 
-RCT_EXTERN_METHOD(childSnapshotForPath:(NSString)snapshotUUID
+RCT_EXTERN_METHOD(snapshotChild:(NSString)snapshotUUID
                   path:(NSString)path
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(snapshotHasChild:(NSString)snapshotUUID
+                  path:(NSString)path
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(releaseSnapshot:(NSString)snapshotUUID)
+
+RCT_EXTERN_METHOD(snapshotExportValue:(NSString)snapshotUUID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(snapshotValue:(NSString)snapshotUUID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(setValue:(NSString)databaseUrl
                   value:NSObject)
 
+RCT_EXTERN_METHOD(removeValue:(NSString)databaseUrl
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(child:(NSString)databaseUrl
                   path:(NSString)path
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(childByAutoId:(NSString)databaseUrl
+RCT_EXTERN_METHOD(push:(NSString)databaseUrl
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

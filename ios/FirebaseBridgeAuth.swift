@@ -24,7 +24,6 @@ class FirebaseBridgeAuth: NSObject, RCTInvalidating {
   var bridge: RCTBridge!
   
   func invalidate() {
-    print("invalidate")
     if let handle = self.authStateDidChangeListenerHandle {
       FIRAuth.auth()?.removeAuthStateDidChangeListener(handle)
     }
