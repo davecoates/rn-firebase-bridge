@@ -1,5 +1,5 @@
-import { FirebaseBridgeAuth as NativeFirebaseBridgeAuth } from 'NativeModules';
-import { NativeAppEventEmitter } from 'react-native';
+import { NativeModules, NativeAppEventEmitter } from 'react-native';
+const NativeFirebaseBridgeAuth = NativeModules.FirebaseBridgeAuth;
 
 const authStateDidChangeListeners = [];
 
@@ -15,7 +15,7 @@ var subscription = NativeAppEventEmitter.addListener(
 
 let authStateDidChangeListenerRegistered = false;
 const {
-    createuserWithEmail,
+    createUserWithEmail,
     signInWithEmail,
 } = NativeFirebaseBridgeAuth;
 
@@ -38,13 +38,13 @@ const addAuthStateDidChangeListener = (cb) => {
 };
 
 export default {
-    createuserWithEmail,
+    createUserWithEmail,
     signInWithEmail,
     addAuthStateDidChangeListener,
 };
 
 export {
     addAuthStateDidChangeListener,
-    createuserWithEmail,
+    createUserWithEmail,
     signInWithEmail,
 };

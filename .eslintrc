@@ -1,0 +1,22 @@
+{
+  "parser": "babel-eslint",
+  "extends": "airbnb/legacy",
+  "env": {
+    "browser": true,
+    "mocha": true,
+    "node": true,
+    "es6": true
+  },
+  "rules": {
+      "indent": [2, 4, {"SwitchCase": 1}],
+      "eqeqeq": [2, "smart"],
+      "new-cap": 0,
+      "flow-vars/define-flow-type": 1,
+      "flow-vars/use-flow-type": 1,
+      "comma-dangle": [2, "always-multiline"]
+  },
+  "plugins": [
+    "flowtype",
+    "flow-vars"
+  ]
+}

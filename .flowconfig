@@ -1,0 +1,8 @@
+[ignore]
+
+[include]
+../react-native/
+
+[libs]
+
+[options]
