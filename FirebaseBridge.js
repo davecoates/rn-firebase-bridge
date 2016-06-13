@@ -5,10 +5,9 @@
 'use strict';
 
 import Auth from './auth';
-import Database, { DataEventTypes } from './database';
+import Database from './database';
 
 export {
     Auth,
     Database,
-    DataEventTypes,
 };

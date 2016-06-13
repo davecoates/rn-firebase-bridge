@@ -33,4 +33,5 @@ export type DataSnapshotDescriptor = {
     childrenCount: number;
     exists: boolean;
     hasChildren: boolean;
+    uuid: string;
 };
