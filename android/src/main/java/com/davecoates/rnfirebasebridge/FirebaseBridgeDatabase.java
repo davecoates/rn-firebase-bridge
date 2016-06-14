@@ -20,6 +20,15 @@ class DatabaseReferenceListenerPair {
         this.ref = ref;
         this.childListener = listener;
     }
+
+    public void unsubscribe() {
+        if (this.valueListener != null) {
+            this.ref.removeEventListener(this.valueListener);
+        }
+        if (this.childListener != null) {
+            this.ref.removeEventListener(this.childListener);
+        }
+    }
 }
 
 public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
@@ -97,6 +106,22 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                 break;
         }
         ref.setValue(v);
+    }
+
+    @ReactMethod
+    public void setPriority(String databaseUrl, ReadableArray value) {
+       DatabaseReference ref = getRefFromUrl(databaseUrl);
+        switch(value.getType(0)) {
+            case Number:
+                ref.setPriority(value.getDouble(0));
+                break;
+            case String:
+                ref.setPriority(value.getString(0));
+                break;
+            default:
+                ref.setPriority(null);
+                break;
+        }
     }
 
     /**
@@ -314,6 +339,14 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
         data.putBoolean("hasChildren", snapshot.hasChildren());
         data.putBoolean("exists", snapshot.exists());
         data.putString("uuid", id.toString());
+        Object priority = snapshot.getPriority();
+        if (priority instanceof String) {
+            data.putString("priority", (String)priority);
+        } else if (priority instanceof Double) {
+            data.putDouble("priority", (Double)priority);
+        } else {
+            data.putNull("priority");
+        }
 
         return data;
     }
@@ -322,23 +355,26 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
 
     @ReactMethod
     public void on(String databaseUrl, final String eventType, Promise promise) {
-        final UUID handleUUID = UUID.randomUUID();
+        // This is the event name that will be fired on the JS side whenever
+        // the Firebase event occurs. An event listener is registered here
+        // which then fires the event on the JS bridge.
+        final UUID uniqueEventName = UUID.randomUUID();
         final DatabaseReference ref = getRefFromUrl(databaseUrl);
         switch (eventType) {
             case "value":
                 ValueEventListener listener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        sendEvent(handleUUID.toString(), convertSnapshot(dataSnapshot));
+                        sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
                     }
                 };
-                listenersByUUID.put(handleUUID.toString(), new DatabaseReferenceListenerPair(ref, listener));
+                listenersByUUID.put(uniqueEventName.toString(), new DatabaseReferenceListenerPair(ref, listener));
                 ref.addValueEventListener(listener);
-                promise.resolve(handleUUID.toString());
+                promise.resolve(uniqueEventName.toString());
                 break;
             case "child_added":
             case "child_removed":
@@ -348,28 +384,28 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_added")) {
-                            sendEvent(handleUUID.toString(), convertSnapshot(dataSnapshot));
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
                         }
                     }
 
                     @Override
                     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_changed")) {
-                            sendEvent(handleUUID.toString(), convertSnapshot(dataSnapshot));
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
                         }
                     }
 
                     @Override
                     public void onChildRemoved(DataSnapshot dataSnapshot) {
                         if (eventType.equals("child_removed")) {
-                            sendEvent(handleUUID.toString(), convertSnapshot(dataSnapshot));
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
                         }
                     }
 
                     @Override
                     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_moved")) {
-                            sendEvent(handleUUID.toString(), convertSnapshot(dataSnapshot));
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
                         }
                     }
 
@@ -378,12 +414,21 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
 
                     }
                 };
-                listenersByUUID.put(handleUUID.toString(), new DatabaseReferenceListenerPair(ref, childListener));
+                listenersByUUID.put(uniqueEventName.toString(), new DatabaseReferenceListenerPair(ref, childListener));
                 ref.addChildEventListener(childListener);
-                promise.resolve(handleUUID.toString());
+                promise.resolve(uniqueEventName.toString());
                 break;
             default:
                 promise.reject("unknown_event", "Unknown event type " + eventType);
+        }
+    }
+
+    @ReactMethod
+    void off(String uniqueEventName) {
+        // uniqueEventName here matches one create in on()
+        if (listenersByUUID.containsKey(uniqueEventName)) {
+            listenersByUUID.get(uniqueEventName).unsubscribe();
+            listenersByUUID.remove(uniqueEventName);
         }
     }
 

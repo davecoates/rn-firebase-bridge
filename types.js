@@ -1,15 +1,15 @@
 // @flow
 
-interface DataSnapshot {
-    child(path: String) : DataSnapshot;
-    exists() : boolean;
-    exportVal() : any;
+export interface DataSnapshot {
+    child(path: string) : DataSnapshot;
+    exists() : Promise<boolean>;
+    exportVal() : Promise<any>;
     forEach(cb:(snapshot:DataSnapshot) => void) : boolean;
-    getPriority() : string | number | null;
-    hasChild(path:string) : boolean;
-    hasChildren() : boolean;
-    numChildren() : number;
-    val() : any;
+    getPriority() : Promise<string | number | null>;
+    hasChild(path:string) : Promise<boolean>;
+    hasChildren() : Promise<boolean>;
+    numChildren() : Promise<number>;
+    val() : Promise<any>;
 }
 
 export interface DatabaseReference {
@@ -17,6 +17,7 @@ export interface DatabaseReference {
     child(pathString:string) : DatabaseReference;
     push() : DatabaseReference;
     setValue(value:any) : Promise;
+    setPriority(priority:number|string|null) : void;
 }
 
 export type User = {
@@ -42,4 +43,5 @@ export type DataSnapshotDescriptor = {
     exists: boolean;
     hasChildren: boolean;
     uuid: string;
+    priority: string | number | null;
 };

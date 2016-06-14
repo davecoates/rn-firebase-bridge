@@ -41,13 +41,16 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   func cacheSnapshotAndConvert(snapshot:FIRDataSnapshot) -> Dictionary<String, AnyObject> {
     let snapshotUUID = NSUUID.init()
     self.snapshotCache.setObject(snapshot, forKey: snapshotUUID.UUIDString)
-    let body:Dictionary<String, AnyObject> = [
+    var body:Dictionary<String, AnyObject> = [
       "ref": self.convertRef(snapshot.ref),
       "exists": snapshot.exists(),
       "childrenCount": snapshot.childrenCount,
       "hasChildren": snapshot.hasChildren(),
       "uuid": snapshotUUID.UUIDString,
     ]
+    if let priority = snapshot.priority {
+      body["priority"] = priority
+    }
     return body
   }
   
@@ -95,21 +98,21 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   @objc func on(databaseUrl: String?, eventTypeString:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     let ref = getRefFromUrl(databaseUrl)
     if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
-      let handleUUID = NSUUID.init()
-      resolve(handleUUID.UUIDString)
+      let uniqueEventName = NSUUID.init()
+      resolve(uniqueEventName.UUIDString)
       let handle = ref.observeEventType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
         self.bridge.eventDispatcher().sendAppEventWithName(
-            handleUUID.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
+            uniqueEventName.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
         })
       
-      self.databaseEventHandles[handleUUID.UUIDString] = (ref, handle)
+      self.databaseEventHandles[uniqueEventName.UUIDString] = (ref, handle)
     } else {
       reject("unknown_event", "Unknown event type provided \(eventTypeString)", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   
-  @objc func off(handleUUID:String) {
-    if let (ref, handle) = databaseEventHandles[handleUUID] {
+  @objc func off(uniqueEventName:String) {
+    if let (ref, handle) = databaseEventHandles[uniqueEventName] {
       ref.removeObserverWithHandle(handle)
     }
   }
@@ -139,6 +142,10 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   // We receive an array of a single element which is the value to set
   @objc func setValue(databaseUrl:String, value:[AnyObject]) {
     getRefFromUrl(databaseUrl).setValue(value[0])
+  }
+  
+  @objc func setPriority(databaseUrl:String, priority:[AnyObject]) {
+    getRefFromUrl(databaseUrl).setPriority(priority[0])
   }
   
   @objc func removeValue(databaseUrl:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {

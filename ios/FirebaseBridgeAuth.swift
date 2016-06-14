@@ -7,14 +7,22 @@
 import Firebase
 
 func userToDict(user:FIRUser) -> Dictionary<String, AnyObject> {
-  return [
+  var data:Dictionary<String, AnyObject> = [
     "uid": user.uid,
-    "email": (user.email ?? ""),
     "emailVerified": user.emailVerified,
-    "displayName": (user.displayName ?? ""),
-    "photoUrl": (user.photoURL ?? ""),
     "anonymous": user.anonymous,
   ]
+  if let email = user.email {
+    data["email"] = email
+  }
+  if let displayName = user.displayName {
+    data["displayName"] = displayName
+  }
+  if let photoURL = user.photoURL {
+    data["photoURL"] = photoURL
+  }
+  
+  return data
 }
 
 

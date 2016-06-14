@@ -33,6 +33,9 @@ RCT_EXTERN_METHOD(snapshotValue:(NSString)snapshotUUID
 RCT_EXTERN_METHOD(setValue:(NSString)databaseUrl
                   value:NSObject)
 
+RCT_EXTERN_METHOD(setPriority:(NSString)databaseUrl
+                  priority:NSObject)
+
 RCT_EXTERN_METHOD(removeValue:(NSString)databaseUrl
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
