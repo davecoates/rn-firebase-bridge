@@ -16,7 +16,7 @@ export class DataSnapshot {
 
     constructor(data:DataSnapshotDescriptor) {
         this.data = data;
-        this.ref = new DatabaseReference(Promise.resolve(this.data.ref));
+        this.ref = new DatabaseReference(Promise.resolve(this.data.ref)); // eslint-disable-line
     }
 
     child(path:string) : Promise<DataSnapshot> {
@@ -112,5 +112,5 @@ export class DatabaseReference {
 export default {
     ref() {
         return new DatabaseReference();
-    }
-}
+    },
+};

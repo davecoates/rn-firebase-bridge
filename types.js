@@ -19,6 +19,14 @@ export interface DatabaseReference {
     setValue(value:any) : Promise;
 }
 
+export type User = {
+    uid: string;
+    email: ?string;
+    displayName: ?string;
+    photoUrl: ?string;
+    anonymous: boolean;
+}
+
 export type EventType = 'value' | 'child_added' | 'child_removed' | 'child_changed' | 'child_moved';
 
 // Description of reference received via native bridge calls

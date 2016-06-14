@@ -1,41 +1,45 @@
+// @flow
 import { NativeModules, NativeAppEventEmitter } from 'react-native';
+import type { User } from './types';
 const NativeFirebaseBridgeAuth = NativeModules.FirebaseBridgeAuth;
 
-const authStateDidChangeListeners = [];
+const createUserWithEmail:(email:string, password:string) => Promise<User> =
+    NativeFirebaseBridgeAuth.createUserWithEmail;
+const signInWithEmail:(email:string, password:string) => Promise<User> =
+    NativeFirebaseBridgeAuth.signInWithEmail;
 
-let authUser;
-var subscription = NativeAppEventEmitter.addListener(
+type AuthStateListener = (user:User) => void;
+
+const authStateDidChangeListeners:Array<AuthStateListener> = [];
+
+let authUser:User;
+NativeAppEventEmitter.addListener(
   'authStateDidChange',
-  (user) => {
+  (user:User) => {
       authUser = user;
       authStateDidChangeListeners.forEach(cb => cb(user));
   }
 );
 
-
 let authStateDidChangeListenerRegistered = false;
-const {
-    createUserWithEmail,
-    signInWithEmail,
-} = NativeFirebaseBridgeAuth;
-
-const addAuthStateDidChangeListener = (cb) => {
+function addAuthStateDidChangeListener(cb:AuthStateListener) : () => void {
     authStateDidChangeListeners.push(cb);
     if (!authStateDidChangeListenerRegistered) {
         NativeFirebaseBridgeAuth.addAuthStateDidChangeListener();
         authStateDidChangeListenerRegistered = true;
     } else {
-        cb(user);
+        cb(authUser);
     }
     return () => {
         const index = authStateDidChangeListeners.indexOf(cb);
         if (index === -1) {
-            console.warn('Callback not found for authStateDidChangeListener');
+            console.warn( // eslint-disable-line
+                'Callback not found for authStateDidChangeListener');
             return;
         }
         authStateDidChangeListeners.splice(index, 1);
     };
-};
+}
 
 export default {
     createUserWithEmail,
