@@ -93,9 +93,26 @@ const item = Database.reference().child('shop').child('packages').push().child('
 
 Push a new item onto a list.
 
-#### on(eventType:DataEventTypes, cb:(snapshot:DataSnapshot) => void) : Function
+#### on(eventType:DataEventTypes, cb:(snapshot:DataSnapshot) => Promise) : Function
 
 Listen for a change event. Returns a function to remove the listener.
+
+Because fetching a snapshot is asynchronous and then any further actions on that
+snapshot are also asynchronous (including fetching it's children, which are
+also snapshots) we have to cache the snapshots on the native side to allow further
+queries. We don't want to cache them forever, just until the consumer is done with it
+but without relying on manual release. The callback must return a promise which,
+when it resolves or rejects, causes the snapshot to be released on the native side.
+Because of async/await this isn't too onerous:
+
+```
+ref.on('value', async (snapshot) => {
+    await snapshot.forEach(async (child) => {
+        console.log('Child value:', async child.val());
+    })
+    console.log('Value is': await snapshot.val());
+});
+```
 
 ### DataSnapshot
 
@@ -108,3 +125,19 @@ Whenever a listener is called for a data event a `DataSnapshot` is passed.
 ### hasChildren() : Promise<boolean>;
 ### numChildren() : Promise<number>;
 ### val() : Promise<any>;
+### forEach(cb:(snapshot:DataSnapshot) => Promise) : Promise;
+
+As with `DatabaseReference.on` the callback should return a promise to indicate
+the snapshot is no longer needed. If your promise returns true then no further
+iteration will occur.
+
+```
+snapshot.forEach(async (child) => {
+    const value = await child.val();
+    if (value === "abc") {
+        // Cancel enumeration
+        return true;
+    }
+});
+```
+#### getPriority() : Promise<string | number | null>;

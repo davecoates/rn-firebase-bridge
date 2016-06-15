@@ -309,6 +309,21 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void snapshotChildren(String snapshotUUID, Promise promise)
+    {
+        DataSnapshot snapshot = snapshotCache.get(snapshotUUID);
+        if (null == snapshot) {
+            promise.reject("snapshot_not_found", "Snapshot not found");
+            return;
+        }
+        WritableArray snapshots = Arguments.createArray();
+        for (DataSnapshot child : snapshot.getChildren()) {
+            snapshots.pushMap(convertSnapshot(child));
+        }
+        promise.resolve(snapshots);
+    }
+
+    @ReactMethod
     public void snapshotHasChild(String snapshotUUID, String path, Promise promise)
     {
         DataSnapshot snapshot = snapshotCache.get(snapshotUUID);

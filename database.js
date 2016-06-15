@@ -56,6 +56,55 @@ export class DataSnapshot {
         return this.parentPromise.then(({ priority }) => priority);
     }
 
+    /**
+     * Fire callback for each child. The callback should return a Promise that resolves
+     * (or rejects) when you are finished with the snapshot. This is done so the snapshot
+     * can be released. If the promise resolves to boolean false then iteration will
+     * terminate and no further callbacks will be triggered. eg.
+     * snapshot.forEach(async (snapshot) => {
+     *    // ... whatever
+     *    if (terminalCondition) {
+     *       return false;
+     *    }
+     * })
+     */
+    forEach(cb:(snapshot:DataSnapshotType) => Promise) : Promise {
+        const wrapCb = (data:DataSnapshotDescriptor) => {
+            const snapshot:DataSnapshotType = new DataSnapshot(data);
+            const promise = cb(snapshot);
+            invariant(promise && typeof promise.then == 'function',
+                'DataSnapshot.forEach callbacks should return a promise so we know when ' +
+                'you are done with snapshots. This is necessary as all interaction ' +
+                'with the native modules is async so we cache snapshots and manually ' +
+                'release them.'
+            );
+            const release = () => NativeFirebaseBridgeDatabase.releaseSnapshot(data.uuid);
+            if (promise && promise.then) {
+                promise.then(release, e => {
+                    release();
+                    throw e;
+                });
+            }
+            return promise;
+        };
+        return this.parentPromise.then(({ uuid }) =>
+            NativeFirebaseBridgeDatabase.snapshotChildren(uuid).then(async (children = []) => {
+                let terminated = false;
+                for (const child:DataSnapshotDescriptor of children) {
+                    if (terminated) {
+                        NativeFirebaseBridgeDatabase.releaseSnapshot(child.uuid);
+                        continue;
+                    }
+                    const result = await wrapCb(child);
+                    // Boolean false indicates we should stop iterating now.
+                    // Flag for termination but continue iterating to release remaining snapshots.
+                    if (result === true) {
+                        terminated = true;
+                    }
+                }
+            }));
+    }
+
 }
 
 export class DatabaseReference {
@@ -108,7 +157,7 @@ export class DatabaseReference {
      * Subscribe to an event.
      * @return {Function} a function that will unsubscribe from this event
      */
-    on(eventType:EventType, cb:((snapshot:DataSnapshotType) => void)) : () => void {
+    on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise)) : () => void {
         const p = this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(locationUrl, eventType))
             .then(uniqueEventName => {

@@ -1,10 +1,12 @@
 // @flow
 
+export type EventType = 'value' | 'child_added' | 'child_removed' | 'child_changed' | 'child_moved';
+
 export interface DataSnapshot {
     child(path: string) : DataSnapshot;
     exists() : Promise<boolean>;
     exportVal() : Promise<any>;
-    forEach(cb:(snapshot:DataSnapshot) => void) : boolean;
+    forEach(cb:(snapshot:DataSnapshot) => Promise) : Promise;
     getPriority() : Promise<string | number | null>;
     hasChild(path:string) : Promise<boolean>;
     hasChildren() : Promise<boolean>;
@@ -17,7 +19,9 @@ export interface DatabaseReference {
     child(pathString:string) : DatabaseReference;
     push() : DatabaseReference;
     setValue(value:any) : Promise;
+    remove() : Promise;
     setPriority(priority:number|string|null) : void;
+    on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise)) : () => void;
 }
 
 export type User = {
@@ -28,7 +32,6 @@ export type User = {
     anonymous: boolean;
 }
 
-export type EventType = 'value' | 'child_added' | 'child_removed' | 'child_changed' | 'child_moved';
 
 // Description of reference received via native bridge calls
 export type DatabaseReferenceDescriptor = {
@@ -43,5 +46,5 @@ export type DataSnapshotDescriptor = {
     exists: boolean;
     hasChildren: boolean;
     uuid: string;
-    priority: string | number | null;
+    priority: number;
 };

@@ -91,6 +91,14 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
     }
   }
   
+  @objc func snapshotChildren(snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+     if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+      resolve(snapshot.children.map({self.cacheSnapshotAndConvert($0 as! FIRDataSnapshot)}))
+    } else {
+      reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }
+  }
+  
   var databaseEventHandles = Dictionary<String, (FIRDatabaseReference, FIRDatabaseHandle)>();
   
   // Setup event subscription. eventTypeString should match one of JsDataEventType.
@@ -134,6 +142,7 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   @objc func child(databaseUrl: String?, path:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     resolve(convertRef(getRefFromUrl(databaseUrl).child(path)))
   }
+  
   
   @objc func push(databaseUrl: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     resolve(convertRef(getRefFromUrl(databaseUrl).childByAutoId()))
