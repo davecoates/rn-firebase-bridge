@@ -149,12 +149,36 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   }
   
   // We receive an array of a single element which is the value to set
-  @objc func setValue(databaseUrl:String, value:[AnyObject]) {
+  @objc func setValue(databaseUrl:String, value:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     getRefFromUrl(databaseUrl).setValue(value[0])
+    getRefFromUrl(databaseUrl).setValue(value[0], withCompletionBlock: {(error, ref) in
+      if (error != nil) {
+        reject("set_value_failed", error?.localizedDescription, error)
+      } else {
+        resolve(nil)
+      }
+    })
   }
   
-  @objc func setPriority(databaseUrl:String, priority:[AnyObject]) {
-    getRefFromUrl(databaseUrl).setPriority(priority[0])
+  @objc func setValueWithPriority(databaseUrl:String, value:[AnyObject], priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefFromUrl(databaseUrl).setValue(value[0], andPriority: priority[0], withCompletionBlock: {(error, ref) in
+      if (error != nil) {
+        reject("set_value_failed", error?.localizedDescription, error)
+      } else {
+        resolve(nil)
+      }
+    })
+  }
+  
+  
+  @objc func setPriority(databaseUrl:String, priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefFromUrl(databaseUrl).setPriority(priority[0], withCompletionBlock: {(error, ref) in
+      if (error != nil) {
+        reject("set_priority_failed", error?.localizedDescription, error)
+      } else {
+        resolve(nil)
+      }
+    })
   }
   
   @objc func removeValue(databaseUrl:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {

@@ -82,7 +82,7 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
      * @param value
      */
     @ReactMethod
-    public void setValue(String databaseUrl, ReadableArray value) {
+    public void setValue(String databaseUrl, ReadableArray value, final Promise promise) {
         DatabaseReference ref = getRefFromUrl(databaseUrl);
         Object v = null;
         switch(value.getType(0)) {
@@ -105,21 +105,93 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                 v = ((ReadableNativeArray)value.getArray(0)).toArrayList();
                 break;
         }
-        ref.setValue(v);
+        ref.setValue(v, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError != null) {
+                    promise.reject(databaseError.toException());
+                } else {
+                    promise.resolve(null);
+                }
+            }
+        });
+    }
+
+    /**
+     * Value and priority are always an array where the first element is the
+     * value / priority to set.
+     * This was the easiest way I could see to accept any value type without
+     * having to implement individual setters (eg. setValueString).
+     * @param databaseUrl
+     * @param value
+     */
+    @ReactMethod
+    public void setValueWithPriority(String databaseUrl, ReadableArray value, ReadableArray priority, final Promise promise) {
+        DatabaseReference ref = getRefFromUrl(databaseUrl);
+        Object v = null;
+        switch(value.getType(0)) {
+            case Null:
+                v = null;
+                break;
+            case Boolean:
+                v = value.getBoolean(0);
+                break;
+            case Number:
+                v = value.getDouble(0);
+                break;
+            case String:
+                v = value.getString(0);
+                break;
+            case Map:
+                v = ((ReadableNativeMap)value.getMap(0)).toHashMap();
+                break;
+            case Array:
+                v = ((ReadableNativeArray)value.getArray(0)).toArrayList();
+                break;
+        }
+        Object p = null;
+        switch(priority.getType(0)) {
+            case Number:
+                p = value.getDouble(0);
+                break;
+            case String:
+                p = value.getString(0);
+                break;
+        }
+        ref.setValue(v, p, new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError != null) {
+                    promise.reject(databaseError.toException());
+                } else {
+                    promise.resolve(null);
+                }
+            }
+        });
     }
 
     @ReactMethod
-    public void setPriority(String databaseUrl, ReadableArray value) {
-       DatabaseReference ref = getRefFromUrl(databaseUrl);
+    public void setPriority(String databaseUrl, ReadableArray value, final Promise promise) {
+        DatabaseReference.CompletionListener listener = new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError != null) {
+                    promise.reject(databaseError.toException());
+                } else {
+                    promise.resolve(null);
+                }
+            }
+        };
+        DatabaseReference ref = getRefFromUrl(databaseUrl);
         switch(value.getType(0)) {
             case Number:
-                ref.setPriority(value.getDouble(0));
+                ref.setPriority(value.getDouble(0), listener);
                 break;
             case String:
-                ref.setPriority(value.getString(0));
+                ref.setPriority(value.getString(0), listener);
                 break;
             default:
-                ref.setPriority(null);
+                ref.setPriority(null, listener);
                 break;
         }
     }

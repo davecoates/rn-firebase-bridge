@@ -6,6 +6,7 @@ import type {
     DataSnapshotDescriptor,
     DataSnapshot as DataSnapshotType,
     DatabaseReference as DatabaseReferenceType,
+    Priority,
 } from './types';
 
 const NativeFirebaseBridgeDatabase = NativeModules.FirebaseBridgeDatabase;
@@ -52,7 +53,7 @@ export class DataSnapshot {
             NativeFirebaseBridgeDatabase.snapshotExportValue(uuid));
     }
 
-    getPriority() : Promise<number | string | null> {
+    getPriority() : Promise<Priority> {
         return this.parentPromise.then(({ priority }) => priority);
     }
 
@@ -133,17 +134,25 @@ export class DatabaseReference {
         return new DatabaseReference(promise);
     }
 
-    setValue(value:any) {
+    setValue(value:any) : Promise {
         // We wrap value in array for easier handling on Android.
         // See FirebridgeDatabase.java setValue()
         return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, [value]));
     }
 
-    setPriority(priority:number|string|null) {
+    setValueWithPriority(value:any, priority:Priority) : Promise {
+        // We wrap value in array for easier handling on Android.
+        // See FirebridgeDatabase.java setValue()
+        return this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValueWithPriority(
+                locationUrl, [value], [priority]));
+    }
+
+    setPriority(priority:Priority) : Promise {
         // We wrap priority in array for easier handling on Android.
         // See FirebridgeDatabase.java setPriority()
-        this.parentPromise.then(
+        return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.setPriority(locationUrl, [priority])
         );
     }

@@ -22,6 +22,10 @@ functionality is implemented.
 
 One of 'value', 'child_added', 'child_removed', 'child_changed', 'child_moved'
 
+### Priority
+
+string | number | null
+
 ### User
 
 ```
@@ -114,18 +118,27 @@ ref.on('value', async (snapshot) => {
 });
 ```
 
+# setValue(value:any) : Promise
+Set value and return a promise that resolves when complete. Will reject on failure.
+# setValueWithPriority(value:any, priority:Priority) : Promise
+As above but set value with priority.
+# remove() : Promise
+Remove value with a promise that resolves on completion.
+# setPriority(priority:Priority) : Promise
+Set priority and return a promise that resolves when complete. Will reject on failure.
+
 ### DataSnapshot
 
 Whenever a listener is called for a data event a `DataSnapshot` is passed.
 
-### child(path: string) : DataSnapshot;
-### exists() : Promise<boolean>;
-### exportVal() : Promise<any>;
-### hasChild(path:string) : Promise<boolean>;
-### hasChildren() : Promise<boolean>;
-### numChildren() : Promise<number>;
-### val() : Promise<any>;
-### forEach(cb:(snapshot:DataSnapshot) => Promise) : Promise;
+### child(path: string) : DataSnapshot
+### exists() : Promise<boolean>
+### exportVal() : Promise<any>
+### hasChild(path:string) : Promise<boolean>
+### hasChildren() : Promise<boolean>
+### numChildren() : Promise<number>
+### val() : Promise<any>
+### forEach(cb:(snapshot:DataSnapshot) => Promise) : Promise
 
 As with `DatabaseReference.on` the callback should return a promise to indicate
 the snapshot is no longer needed. If your promise returns true then no further
@@ -140,4 +153,4 @@ snapshot.forEach(async (child) => {
     }
 });
 ```
-#### getPriority() : Promise<string | number | null>;
+#### getPriority() : Promise<Priority>

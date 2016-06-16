@@ -2,12 +2,14 @@
 
 export type EventType = 'value' | 'child_added' | 'child_removed' | 'child_changed' | 'child_moved';
 
+export type Priority = number | string | null;
+
 export interface DataSnapshot {
     child(path: string) : DataSnapshot;
     exists() : Promise<boolean>;
     exportVal() : Promise<any>;
     forEach(cb:(snapshot:DataSnapshot) => Promise) : Promise;
-    getPriority() : Promise<string | number | null>;
+    getPriority() : Promise<Priority>;
     hasChild(path:string) : Promise<boolean>;
     hasChildren() : Promise<boolean>;
     numChildren() : Promise<number>;
@@ -19,9 +21,10 @@ export interface DatabaseReference {
     child(pathString:string) : DatabaseReference;
     push() : DatabaseReference;
     setValue(value:any) : Promise;
+    setValueWithPriority(value:any, priority:Priority) : Promise;
     remove() : Promise;
-    setPriority(priority:number|string|null) : void;
-    on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise)) : () => void;
+    setPriority(priority:Priority) : Promise;
+    on(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void;
 }
 
 export type User = {

@@ -35,10 +35,20 @@ RCT_EXTERN_METHOD(snapshotChildren:(NSString)snapshotUUID
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(setValue:(NSString)databaseUrl
-                  value:NSObject)
+                  value:NSObject
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(setValueWithPriority:(NSString)databaseUrl
+                  value:NSObject
+                  priority:NSObject
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(setPriority:(NSString)databaseUrl
-                  priority:NSObject)
+                  priority:NSObject
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(removeValue:(NSString)databaseUrl
                   resolver:(RCTPromiseResolveBlock)resolve
