@@ -63,6 +63,19 @@ signInWithEmail('test@example.com', 'pass1234').then(
 
 Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInWithEmailAndPassword)
 
+### signInAnonymously() : Promise<User>
+
+```
+import { signInAnonymously } from 'rn-firebase-bridge/auth';
+
+signInAnonymously().then(
+    user => console.log(user),
+    error => console.log(error)
+);
+```
+
+Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInAnonymously)
+
 ### addAuthStateDidChangeListener(callback:({user:User}) -> void)
 
 ```

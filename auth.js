@@ -8,6 +8,9 @@ const createUserWithEmail:(email:string, password:string) => Promise<User> =
 const signInWithEmail:(email:string, password:string) => Promise<User> =
     NativeFirebaseBridgeAuth.signInWithEmail;
 
+const signInAnonymously:() => Promise<User> =
+    NativeFirebaseBridgeAuth.signInAnonymously;
+
 type AuthStateListener = (user:User) => void;
 
 const authStateDidChangeListeners:Array<AuthStateListener> = [];
@@ -44,6 +47,7 @@ function addAuthStateDidChangeListener(cb:AuthStateListener) : () => void {
 export default {
     createUserWithEmail,
     signInWithEmail,
+    signInAnonymously,
     addAuthStateDidChangeListener,
 };
 
@@ -51,4 +55,5 @@ export {
     addAuthStateDidChangeListener,
     createUserWithEmail,
     signInWithEmail,
+    signInAnonymously,
 };

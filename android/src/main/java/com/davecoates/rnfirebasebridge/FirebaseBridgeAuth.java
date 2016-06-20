@@ -91,7 +91,22 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
             .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
               @Override
               public void onComplete(@NonNull Task<AuthResult> task) {
-                Log.d(TAG, "User re-authenticated.");
+                try {
+                  AuthResult result = task.getResult();
+                  promise.resolve(convertUser(result.getUser()));
+                } catch (RuntimeExecutionException e) {
+                  promise.reject(e);
+                }
+              }
+            });
+  }
+
+  @ReactMethod
+  public void signInAnonymously(final Promise promise) {
+    FirebaseAuth.getInstance().signInAnonymously()
+            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+              @Override
+              public void onComplete(@NonNull Task<AuthResult> task) {
                 try {
                   AuthResult result = task.getResult();
                   promise.resolve(convertUser(result.getUser()));

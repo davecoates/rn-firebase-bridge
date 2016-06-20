@@ -84,6 +84,21 @@ class FirebaseBridgeAuth: NSObject, RCTInvalidating {
     }
   }
   
+  @objc func signInAnonymously(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    FIRAuth.auth()?.signInAnonymouslyWithCompletion() { (user, error) in
+      if (user == nil) {
+        var name = ""
+        if let userInfo = error?.userInfo as? Dictionary<String, AnyObject> {
+          name = userInfo["error_name"] as! String
+        }
+        reject(name, error?.localizedDescription, error);
+        return;
+      }
+      
+      resolve(userToDict(user!));
+    }
+  }
+  
   
 }
 
