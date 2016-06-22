@@ -88,7 +88,45 @@ addAuthStateDidChangeListener(payload => {
 
 ## Database
 
+### Query
+
+#### endAt(value:number|string|boolean|null, key:?string) : Query
+#### equalTo(value:number|string|boolean|null, key:?string) : Query
+#### limitToFirst(limit:number) : Query
+#### limitToLast(limit:number) : Query
+#### on(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void
+
+Listen for a change event. Returns a function to remove the listener.
+
+Because fetching a snapshot is asynchronous and then any further actions on that
+snapshot are also asynchronous (including fetching it's children, which are
+also snapshots) we have to cache the snapshots on the native side to allow further
+queries. We don't want to cache them forever, just until the consumer is done with it
+but without relying on manual release. The callback must return a promise which,
+when it resolves or rejects, causes the snapshot to be released on the native side.
+Because of async/await this isn't too onerous:
+
+```
+ref.on('value', async (snapshot) => {
+    await snapshot.forEach(async (child) => {
+        console.log('Child value:', async child.val());
+    })
+    console.log('Value is': await snapshot.val());
+});
+```
+
+#### once(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void
+#### orderByChild(path:string) : Query
+#### orderByKey() : Query
+#### orderByPriority() : Query
+#### orderByValue() : Query
+#### startAt(value:number|string|boolean|null, key:?string) : Query
+#### toString() : Promise<string>
+Resolves to full URL for this location.
+
 ### DatabaseReference
+
+Extends `Query`.
 
 ```
 import Database from 'rn-firebase-bridge/database';
@@ -109,27 +147,6 @@ const item = Database.reference().child('shop').child('packages').push().child('
 #### push() : DatabaseReference
 
 Push a new item onto a list.
-
-#### on(eventType:DataEventTypes, cb:(snapshot:DataSnapshot) => Promise) : Function
-
-Listen for a change event. Returns a function to remove the listener.
-
-Because fetching a snapshot is asynchronous and then any further actions on that
-snapshot are also asynchronous (including fetching it's children, which are
-also snapshots) we have to cache the snapshots on the native side to allow further
-queries. We don't want to cache them forever, just until the consumer is done with it
-but without relying on manual release. The callback must return a promise which,
-when it resolves or rejects, causes the snapshot to be released on the native side.
-Because of async/await this isn't too onerous:
-
-```
-ref.on('value', async (snapshot) => {
-    await snapshot.forEach(async (child) => {
-        console.log('Child value:', async child.val());
-    })
-    console.log('Value is': await snapshot.val());
-});
-```
 
 # setValue(value:any) : Promise
 Set value and return a promise that resolves when complete. Will reject on failure.

@@ -99,12 +99,54 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
     }
   }
   
-  var databaseEventHandles = Dictionary<String, (FIRDatabaseReference, FIRDatabaseHandle)>();
+  var databaseEventHandles = Dictionary<String, (FIRDatabaseQuery, FIRDatabaseHandle)>();
   
   // Setup event subscription. eventTypeString should match one of JsDataEventType.
   // Can't use @objc with string enums so we manually init it below.
-  @objc func on(databaseUrl: String?, eventTypeString:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let ref = getRefFromUrl(databaseUrl)
+  @objc func on(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    var ref:FIRDatabaseQuery = getRefFromUrl(databaseUrl)
+    for queryDescriptor in query {
+      // Each query is array; first element is function name and rest
+      // are arguments to that function
+      let fnName:String = queryDescriptor[0] as! String
+      let paramCount = queryDescriptor.count - 1
+      switch (fnName) {
+        case "orderByChild":
+          ref = ref.queryOrderedByChild(queryDescriptor[1] as! String)
+        case "orderByKey":
+          ref = ref.queryOrderedByKey()
+        case "orderByPriority":
+          ref = ref.queryOrderedByPriority()
+        case "orderByValue":
+          ref = ref.queryOrderedByValue()
+        case "startAt":
+          if (paramCount == 2) {
+            ref = ref.queryStartingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+          } else {
+            ref = ref.queryStartingAtValue(queryDescriptor[1])
+          }
+        case "endAt":
+          if (paramCount == 2) {
+            ref = ref.queryEndingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+          } else {
+            ref = ref.queryEndingAtValue(queryDescriptor[1])
+          }
+        case "equalTo":
+          if (paramCount == 2) {
+            ref = ref.queryEqualToValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+          } else {
+            ref = ref.queryEqualToValue(queryDescriptor[1])
+          }
+        case "limitToFirst":
+          ref = ref.queryLimitedToFirst(queryDescriptor[1] as! UInt)
+        case "limitToLast":
+          ref = ref.queryLimitedToLast(queryDescriptor[1] as! UInt)
+        default:
+          reject("invalid_query", "Unknown query function \(fnName)",
+                 NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+          return;
+      }
+    }
     if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
       let uniqueEventName = NSUUID.init()
       resolve(uniqueEventName.UUIDString)

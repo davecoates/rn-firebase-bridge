@@ -6,17 +6,19 @@ import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 import com.google.firebase.database.*;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.*;
 
 class DatabaseReferenceListenerPair {
-    public DatabaseReference ref;
+    public Query ref;
     public ValueEventListener valueListener;
     public ChildEventListener childListener;
-    public DatabaseReferenceListenerPair(DatabaseReference ref, ValueEventListener listener) {
+    public DatabaseReferenceListenerPair(Query ref, ValueEventListener listener) {
         this.ref = ref;
         this.valueListener = listener;
     }
-    public DatabaseReferenceListenerPair(DatabaseReference ref, ChildEventListener listener) {
+    public DatabaseReferenceListenerPair(Query ref, ChildEventListener listener) {
         this.ref = ref;
         this.childListener = listener;
     }
@@ -152,10 +154,10 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
         Object p = null;
         switch(priority.getType(0)) {
             case Number:
-                p = value.getDouble(0);
+                p = priority.getDouble(0);
                 break;
             case String:
-                p = value.getString(0);
+                p = priority.getString(0);
                 break;
         }
         ref.setValue(v, p, new DatabaseReference.CompletionListener() {
@@ -441,12 +443,105 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
     private Map<String, DatabaseReferenceListenerPair> listenersByUUID = new HashMap<>();
 
     @ReactMethod
-    public void on(String databaseUrl, final String eventType, Promise promise) {
+    public void on(String databaseUrl, final String eventType, ReadableArray query, Promise promise) {
         // This is the event name that will be fired on the JS side whenever
         // the Firebase event occurs. An event listener is registered here
         // which then fires the event on the JS bridge.
         final UUID uniqueEventName = UUID.randomUUID();
-        final DatabaseReference ref = getRefFromUrl(databaseUrl);
+        Query ref = getRefFromUrl(databaseUrl);
+        for (int i = 0; i< query.size(); i++) {
+            ReadableArray queryDescriptor = query.getArray(i);
+            String fnName = queryDescriptor.getString(0);
+            int paramCount = queryDescriptor.size() - 1;
+            switch(fnName) {
+                case "orderByChild":
+                    ref = ref.orderByChild(queryDescriptor.getString(1));
+                    break;
+                case "orderByKey":
+                    ref = ref.orderByKey();
+                    break;
+                case "orderByPriority":
+                    ref = ref.orderByPriority();
+                    break;
+                case "orderByValue":
+                    ref = ref.orderByValue();
+                    break;
+                case "startAt":
+                case "endAt":
+                case "equalTo":
+                    if (paramCount < 1 || paramCount > 2) {
+                        promise.reject(
+                                "invalid_query",
+                                fnName + " takes either 1 or two parameters"
+                        );
+                        return;
+                    }
+                    if (paramCount == 2 && queryDescriptor.getType(2) != ReadableType.String) {
+                        promise.reject(
+                                "invalid_query",
+                                fnName + " second parameter must be a string"
+                        );
+                        return;
+                    }
+                    Class<?>[] paramTypes = new Class[paramCount];
+                    if (paramCount == 2) {
+                        paramTypes[1] = String.class;
+                    }
+                    Method method;
+                    try {
+                        switch (queryDescriptor.getType(1)) {
+                            case Boolean:
+                                boolean b = queryDescriptor.getBoolean(1);
+                                paramTypes[0] = boolean.class;
+                                method = ref.getClass().getMethod(fnName, paramTypes);
+                                if (paramCount == 2) {
+                                    ref = (Query) method.invoke(ref, b, queryDescriptor.getString(2));
+                                } else {
+                                    ref = (Query) method.invoke(ref, b);
+                                }
+                                break;
+                            case Number:
+                                double d = queryDescriptor.getDouble(1);
+                                paramTypes[0] = double.class;
+                                method = ref.getClass().getMethod(fnName, paramTypes);
+                                if (paramCount == 2) {
+                                    ref = (Query) method.invoke(ref, d, queryDescriptor.getString(2));
+                                } else {
+                                    ref = (Query) method.invoke(ref, d);
+                                }
+                                break;
+                            case String:
+                                String s = queryDescriptor.getString(1);
+                                paramTypes[0] = String.class;
+                                method = ref.getClass().getMethod(fnName, paramTypes);
+                                if (paramCount == 2) {
+                                    ref = (Query) method.invoke(ref, s, queryDescriptor.getString(2));
+                                } else {
+                                    ref = (Query) method.invoke(ref, s);
+                                }
+                                break;
+                            default:
+                                promise.reject(
+                                        "invalid_query",
+                                        "Unexpected type passed as first parameter to " + fnName + ". Should be Boolean, Number or String."
+                                );
+                                break;
+                        }
+                    } catch (Exception e) {
+                        promise.reject(e);
+                    }
+                    break;
+                case "limitToFirst":
+                    ref = ref.limitToFirst(queryDescriptor.getInt(1));
+                    break;
+                case "limitToLast":
+                    ref = ref.limitToLast(queryDescriptor.getInt(1));
+                    break;
+                default:
+                    promise.reject("invalid_query", "Unknown query function " + fnName);
+                    return;
+            }
+        }
         switch (eventType) {
             case "value":
                 ValueEventListener listener = new ValueEventListener() {

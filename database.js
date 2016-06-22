@@ -6,6 +6,7 @@ import type {
     DataSnapshotDescriptor,
     DataSnapshot as DataSnapshotType,
     DatabaseReference as DatabaseReferenceType,
+    Query as QueryType,
     Priority,
 } from './types';
 
@@ -108,58 +109,47 @@ export class DataSnapshot {
 
 }
 
-export class DatabaseReference {
+
+export class Query {
 
     parentPromise: Promise;
-    keyPromise: Promise;
+    query:Array<Array<any>>;
 
-    constructor(parentPromise:?Promise = null) {
-        this.parentPromise = (parentPromise || Promise.resolve({}));
-        this.keyPromise = this.parentPromise.then(({ key }) => key);
+    constructor(parentPromise:Promise, query:Array<Array<any>> = []) {
+        this.parentPromise = parentPromise;
+        this.query = query;
     }
 
-    key() : Promise<string> {
-        return this.keyPromise;
+    startAt(value:number|string|boolean|null, key:?string) : QueryType {
+        const q = ['startAt', value];
+        if (key != null) {
+            q.push(key);
+        }
+        return new Query(this.parentPromise, [...this.query, q]);
     }
 
-    child(pathString:string) : DatabaseReferenceType {
-        const promise = this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.child(locationUrl, pathString));
-        return new DatabaseReference(promise);
+    endAt(value:number|string|boolean|null, key:?string) : QueryType {
+        const q = ['endAt', value];
+        if (key != null) {
+            q.push(key);
+        }
+        return new Query(this.parentPromise, [...this.query, q]);
     }
 
-    push() : DatabaseReferenceType {
-        const promise = this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.push(locationUrl));
-        return new DatabaseReference(promise);
+    equalTo(value:number|string|boolean|null, key:?string) : QueryType {
+        const q = ['equalTo', value];
+        if (key != null) {
+            q.push(key);
+        }
+        return new Query(this.parentPromise, [...this.query, q]);
     }
 
-    setValue(value:any) : Promise {
-        // We wrap value in array for easier handling on Android.
-        // See FirebridgeDatabase.java setValue()
-        return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, [value]));
+    limitToFirst(limit:number) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['limitToFirst', limit]]);
     }
 
-    setValueWithPriority(value:any, priority:Priority) : Promise {
-        // We wrap value in array for easier handling on Android.
-        // See FirebridgeDatabase.java setValue()
-        return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValueWithPriority(
-                locationUrl, [value], [priority]));
-    }
-
-    setPriority(priority:Priority) : Promise {
-        // We wrap priority in array for easier handling on Android.
-        // See FirebridgeDatabase.java setPriority()
-        return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setPriority(locationUrl, [priority])
-        );
-    }
-
-    remove() : Promise {
-        return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.removeValue(locationUrl));
+    limitToLast(limit:number) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['limitToLast', limit]]);
     }
 
     /**
@@ -168,7 +158,8 @@ export class DatabaseReference {
      */
     on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise)) : () => void {
         const p = this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(locationUrl, eventType))
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(
+                locationUrl, eventType, this.query))
             .then(uniqueEventName => {
                 // We receive a string back from the native module that is a unique
                 // event name just for this event registration. An event with this name
@@ -211,6 +202,84 @@ export class DatabaseReference {
             p.then(unsubscribe => unsubscribe());
         };
     }
+
+    once(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void {
+
+    }
+
+    orderByChild(path:string) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByChild', path]]);
+    }
+
+    orderByKey() : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByKey']]);
+    }
+
+    orderByPriority() : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByPriority']]);
+    }
+
+    orderByValue() : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByValue']]);
+    }
+
+    toString() : Promise<string> {
+        return this.parentPromise.then(({ locationUrl }) => locationUrl);
+    }
+
+}
+
+
+export class DatabaseReference extends Query {
+
+    constructor(parentPromise:?Promise = null) {
+        super((parentPromise || Promise.resolve({})));
+    }
+
+    child(pathString:string) : DatabaseReferenceType {
+        const promise = this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.child(locationUrl, pathString));
+        return new DatabaseReference(promise);
+    }
+
+    push() : DatabaseReferenceType {
+        const promise = this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.push(locationUrl));
+        return new DatabaseReference(promise);
+    }
+
+    setValue(value:any) : Promise {
+        // We wrap value in array for easier handling on Android.
+        // See FirebridgeDatabase.java setValue()
+        return this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, [value]));
+    }
+
+    setValueWithPriority(value:any, priority:Priority) : Promise {
+        // We wrap value in array for easier handling on Android.
+        // See FirebridgeDatabase.java setValue()
+        return this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValueWithPriority(
+                locationUrl, [value], [priority]));
+    }
+
+    setPriority(priority:Priority) : Promise {
+        // We wrap priority in array for easier handling on Android.
+        // See FirebridgeDatabase.java setPriority()
+        return this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setPriority(locationUrl, [priority])
+        );
+    }
+
+    remove() : Promise {
+        return this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.removeValue(locationUrl));
+    }
+
+    key() : Promise<string> {
+        return this.parentPromise.then(({ key }) => key);
+    }
+
 }
 
 export default {

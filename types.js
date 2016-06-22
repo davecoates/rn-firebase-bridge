@@ -16,7 +16,22 @@ export interface DataSnapshot {
     val() : Promise<any>;
 }
 
-export interface DatabaseReference {
+export interface Query {
+    endAt(value:number|string|boolean|null, key:?string) : Query;
+    equalTo(value:number|string|boolean|null, key:?string) : Query;
+    limitToFirst(limit:number) : Query;
+    limitToLast(limit:number) : Query;
+    on(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void;
+    once(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void;
+    orderByChild(path:string) : Query;
+    orderByKey() : Query;
+    orderByPriority() : Query;
+    orderByValue() : Query;
+    startAt(value:number|string|boolean|null, key:?string) : Query;
+    toString() : Promise<string>;
+}
+
+export type DatabaseReference = Query & {
     key(): Promise<string>;
     child(pathString:string) : DatabaseReference;
     push() : DatabaseReference;

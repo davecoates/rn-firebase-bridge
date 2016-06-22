@@ -5,6 +5,7 @@
 
 RCT_EXTERN_METHOD(on:(NSString)databaseUrl
                   eventTypeString:(NSString)eventTypeString
+                  query:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
