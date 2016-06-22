@@ -6,6 +6,7 @@ import type {
     DataSnapshotDescriptor,
     DataSnapshot as DataSnapshotType,
     DatabaseReference as DatabaseReferenceType,
+    Query as QueryType,
     Priority,
 } from './types';
 
@@ -108,13 +109,72 @@ export class DataSnapshot {
 
 }
 
-export class DatabaseReference {
+
+export class Query {
 
     parentPromise: Promise;
+    query:Array<Array<any>>;
+
+    constructor(parentPromise:Promise, query:Array<Array<any>> = []) {
+        this.parentPromise = parentPromise;
+        this.query = query;
+    }
+
+    endAt(value:number|string|boolean|null, key:?string) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['endAt', value, key]]);
+    }
+
+    equalTo(value:number|string|boolean|null, key:?string) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['equalTo', value, key]]);
+    }
+
+    limitToFirst(limit:number) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['limitToFirst', limit]]);
+    }
+
+    limitToLast(limit:number) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['limitToLast', limit]]);
+    }
+
+    on(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void {
+
+    }
+
+    once(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void {
+
+    }
+
+    orderByChild(path:string) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByChild', path]]);
+    }
+
+    orderByKey() : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByKey']]);
+    }
+
+    orderByPriority() : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByPriority']]);
+    }
+
+    orderByValue() : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['orderByValue']]);
+    }
+
+    startAt(value:number|string|boolean|null, key:?string) : QueryType {
+        return new Query(this.parentPromise, [...this.query, ['startAt', value, key]]);
+    }
+
+    toString() : string {
+    }
+}
+
+
+export class DatabaseReference extends Query {
+
     keyPromise: Promise;
 
     constructor(parentPromise:?Promise = null) {
-        this.parentPromise = (parentPromise || Promise.resolve({}));
+        super((parentPromise || Promise.resolve({})));
         this.keyPromise = this.parentPromise.then(({ key }) => key);
     }
 
