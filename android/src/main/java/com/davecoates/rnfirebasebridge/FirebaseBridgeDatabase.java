@@ -38,9 +38,9 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
     private DatabaseReference mDatabase;
     private FirebaseDatabase mInstance;
 
-    public FirebaseBridgeDatabase(ReactApplicationContext reactContext, FirebaseDatabase instance) {
+    public FirebaseBridgeDatabase(ReactApplicationContext reactContext) {
         super(reactContext);
-        mInstance = instance;
+        mInstance = FirebaseDatabase.getInstance();
         mDatabase = FirebaseDatabase.getInstance().getReference();
         FirebaseDatabase.getInstance().goOnline();
     }

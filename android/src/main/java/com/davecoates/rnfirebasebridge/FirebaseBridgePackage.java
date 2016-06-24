@@ -17,12 +17,6 @@ import com.google.firebase.database.FirebaseDatabase;
 
 public class FirebaseBridgePackage implements ReactPackage {
 
-  FirebaseDatabase mDatabaseInstance;
-
-  public FirebaseBridgePackage(FirebaseDatabase instance) {
-    super();
-    mDatabaseInstance = instance;
-  }
 
   @Override
   public List<Class<? extends JavaScriptModule>> createJSModules() {
@@ -40,7 +34,7 @@ public class FirebaseBridgePackage implements ReactPackage {
     List<NativeModule> modules = new ArrayList<>();
 
     modules.add(new FirebaseBridgeAuth(reactContext));
-    modules.add(new FirebaseBridgeDatabase(reactContext, mDatabaseInstance));
+    modules.add(new FirebaseBridgeDatabase(reactContext));
 
     return modules;
   }

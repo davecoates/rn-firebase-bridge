@@ -14,6 +14,43 @@ functionality is implemented.
 
 # Installation
 
+```npm install --save rn-firebase-bridge`
+
+## iOS
+
+In your Firebase console follow the instructions for adding iOS to your project.
+
+Your Podfile should have at least:
+
+```
+pod 'Firebase'
+pod 'Firebase/Database'
+pod 'Firebase/Auth'
+```
+
+Open the Xcode project, right click on `Libraries` and click `Add Files to
+"MyApp"`. Navigate to `node_modules/rn-firebase-bridge` and click the `ios`
+directory. You may wish to rename it to something more obvious (ie. `FirebaseBridge`).
+
+You will also need to create a Swift bridging header
+
+```
+#ifndef pool_Bridging_Header_h_h
+#define pool_Bridging_Header_h_h
+
+#import "RCTBridge.h"
+#import "../node_modules/rn-firebase-bridge/ios/FirebaseBridge.h"
+```
+
+Also make sure your `Other linker flags` setting under `Build Settings` includes
+`$(inherited)`.
+
+## Android
+
+In your firebase console follow the instructions for adding Android to your project.
+
+Run `react-native link`.
+
 # API
 
 ## Types
