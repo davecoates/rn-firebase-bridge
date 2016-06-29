@@ -63,6 +63,8 @@ RCT_EXTERN_METHOD(push:(NSString)databaseUrl
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(setPersistenceEnabled:(BOOL)enabled)
+
 @end
 
 @interface RCT_EXTERN_MODULE(FirebaseBridgeAuth, NSObject)

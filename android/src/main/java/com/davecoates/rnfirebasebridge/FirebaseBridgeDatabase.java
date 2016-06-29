@@ -35,14 +35,9 @@ class DatabaseReferenceListenerPair {
 
 public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
 
-    private DatabaseReference mDatabase;
-    private FirebaseDatabase mInstance;
 
     public FirebaseBridgeDatabase(ReactApplicationContext reactContext) {
         super(reactContext);
-        mInstance = FirebaseDatabase.getInstance();
-        mDatabase = FirebaseDatabase.getInstance().getReference();
-        FirebaseDatabase.getInstance().goOnline();
     }
 
     @Override
@@ -61,9 +56,9 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
 
     private DatabaseReference getRefFromUrl(String databaseUrl) {
         if (databaseUrl == null) {
-            return mDatabase;
+            return FirebaseDatabase.getInstance().getReference();
         }
-        return mInstance.getReferenceFromUrl(databaseUrl);
+        return FirebaseDatabase.getInstance().getReferenceFromUrl(databaseUrl);
     }
 
     @ReactMethod
@@ -606,12 +601,17 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    void off(String uniqueEventName) {
+    public void off(String uniqueEventName) {
         // uniqueEventName here matches one create in on()
         if (listenersByUUID.containsKey(uniqueEventName)) {
             listenersByUUID.get(uniqueEventName).unsubscribe();
             listenersByUUID.remove(uniqueEventName);
         }
+    }
+
+    @ReactMethod
+    public void setPersistenceEnabled(boolean enabled) {
+        FirebaseDatabase.getInstance().setPersistenceEnabled(enabled);
     }
 
 }

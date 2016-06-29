@@ -286,4 +286,7 @@ export default {
     ref() {
         return new DatabaseReference();
     },
+    setPersistenceEnabled(enabled:boolean) {
+        NativeFirebaseBridgeDatabase.setPersistenceEnabled(enabled);
+    },
 };
