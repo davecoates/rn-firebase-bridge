@@ -1,12 +1,10 @@
 package com.davecoates.rnfirebasebridge;
 
 import android.support.annotation.Nullable;
-import android.util.Log;
 import com.facebook.react.bridge.*;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 import com.google.firebase.database.*;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
@@ -609,9 +607,14 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
         }
     }
 
+    static private boolean persistenceEnabled = false;
+
     @ReactMethod
     public void setPersistenceEnabled(boolean enabled) {
-        FirebaseDatabase.getInstance().setPersistenceEnabled(enabled);
+        if (FirebaseBridgeDatabase.persistenceEnabled != enabled) {
+            FirebaseBridgeDatabase.persistenceEnabled = enabled;
+            FirebaseDatabase.getInstance().setPersistenceEnabled(enabled);
+        }
     }
 
 }

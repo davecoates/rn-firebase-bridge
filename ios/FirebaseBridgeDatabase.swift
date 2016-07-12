@@ -234,7 +234,9 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   }
   
   @objc func setPersistenceEnabled(enabled:Bool) {
-    FIRDatabase.database().persistenceEnabled = enabled
+    if (FIRDatabase.database().persistenceEnabled != enabled) {
+      FIRDatabase.database().persistenceEnabled = enabled
+    }
   }
   
 }
