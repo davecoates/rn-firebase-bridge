@@ -175,7 +175,8 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   }
   
   func getRefFromUrl(databaseUrl: String?) -> FIRDatabaseReference {
-    if let url = databaseUrl {
+    let url = databaseUrl ?? ""
+    if !url.isEmpty {
       return FIRDatabase.database().referenceFromURL(url)
     }
     return FIRDatabase.database().reference()
