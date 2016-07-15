@@ -1,4 +1,4 @@
- // @flow
+// @flow
 import { NativeModules, NativeAppEventEmitter } from 'react-native';
 import invariant from 'invariant';
 import type {
@@ -47,6 +47,11 @@ export class DataSnapshot {
     val() : Promise<any> {
         return this.parentPromise.then(({ uuid }) =>
             NativeFirebaseBridgeDatabase.snapshotValue(uuid));
+    }
+
+    key() : Promise<any> {
+        return this.parentPromise.then(({ uuid }) =>
+            NativeFirebaseBridgeDatabase.snapshotKey(uuid));
     }
 
     exportVal() : Promise<any> {
@@ -204,7 +209,50 @@ export class Query {
     }
 
     once(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void {
-
+        const p = this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.once(
+                locationUrl, eventType, this.query))
+            .then(uniqueEventName => {
+                // We receive a string back from the native module that is a unique
+                // event name just for this event registration. An event with this name
+                // will be emitted for this registration. This is cached on the native
+                // side with the event registration handle so we can unsubscribe as
+                // needed.
+                const listener = (data:DataSnapshotDescriptor) => {
+                    // Snapshot's are cached on the native side so we can perform further
+                    // queries on them. Because of this we need a way to release the
+                    // snapshot once we are done with them. We do this by returning a
+                    // promise which, when it resolves (or rejects), causes the snapshot
+                    // to be released on the native. The most convenient way to do this
+                    // is to simply define your callback as async:
+                    // ref.on(async (snapshot) => {
+                    //    // this now automatically returns a promise
+                    // })
+                    const snapshot:DataSnapshotType = new DataSnapshot(data);
+                    const promise = cb(snapshot);
+                    invariant(promise && typeof promise.then == 'function',
+                        'DatabaseReference listeners should return a promise so we know when ' +
+                        'you are done with snapshots. This is necessary as all interaction ' +
+                        'with the native modules is async so we cache snapshots and manually ' +
+                        'release them.'
+                    );
+                    const release = () => NativeFirebaseBridgeDatabase.releaseSnapshot(data.uuid);
+                    if (promise && promise.then) {
+                        promise.then(release, e => {
+                            release();
+                            throw e;
+                        });
+                    }
+                };
+                const subscription = NativeAppEventEmitter.addListener(uniqueEventName, listener);
+                return () => {
+                    subscription.remove();
+                    // NativeFirebaseBridgeDatabase.off(uniqueEventName);
+                };
+            });
+        return () => {
+            p.then(unsubscribe => unsubscribe());
+        };
     }
 
     orderByChild(path:string) : QueryType {
@@ -253,6 +301,13 @@ export class DatabaseReference extends Query {
         // See FirebridgeDatabase.java setValue()
         return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, [value]));
+    }
+
+    update(value:any) : Promise {
+        // We wrap value in array for easier handling on Android.
+        // See FirebridgeDatabase.java setValue()
+        return this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.update(locationUrl, value));
     }
 
     setValueWithPriority(value:any, priority:Priority) : Promise {

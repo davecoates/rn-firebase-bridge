@@ -83,6 +83,14 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
     }
   }
   
+  @objc func snapshotKey(snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+      resolve(snapshot.key)
+    } else {
+      reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }
+  }
+  
   @objc func snapshotExportValue(snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
       resolve(snapshot.valueInExportFormat())
@@ -101,9 +109,11 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   
   var databaseEventHandles = Dictionary<String, (FIRDatabaseQuery, FIRDatabaseHandle)>();
   
-  // Setup event subscription. eventTypeString should match one of JsDataEventType.
-  // Can't use @objc with string enums so we manually init it below.
-  @objc func on(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  enum FirebaseBridgeError: ErrorType {
+    case UnknownQueryFunction(fnName: String)
+  }
+  
+  @objc func onRef(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]]) throws -> FIRDatabaseQuery {
     var ref:FIRDatabaseQuery = getRefFromUrl(databaseUrl)
     for queryDescriptor in query {
       // Each query is array; first element is function name and rest
@@ -111,56 +121,96 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
       let fnName:String = queryDescriptor[0] as! String
       let paramCount = queryDescriptor.count - 1
       switch (fnName) {
-        case "orderByChild":
-          ref = ref.queryOrderedByChild(queryDescriptor[1] as! String)
-        case "orderByKey":
-          ref = ref.queryOrderedByKey()
-        case "orderByPriority":
-          ref = ref.queryOrderedByPriority()
-        case "orderByValue":
-          ref = ref.queryOrderedByValue()
-        case "startAt":
-          if (paramCount == 2) {
-            ref = ref.queryStartingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
-          } else {
-            ref = ref.queryStartingAtValue(queryDescriptor[1])
-          }
-        case "endAt":
-          if (paramCount == 2) {
-            ref = ref.queryEndingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
-          } else {
-            ref = ref.queryEndingAtValue(queryDescriptor[1])
-          }
-        case "equalTo":
-          if (paramCount == 2) {
-            ref = ref.queryEqualToValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
-          } else {
-            ref = ref.queryEqualToValue(queryDescriptor[1])
-          }
-        case "limitToFirst":
-          ref = ref.queryLimitedToFirst(queryDescriptor[1] as! UInt)
-        case "limitToLast":
-          ref = ref.queryLimitedToLast(queryDescriptor[1] as! UInt)
-        default:
-          reject("invalid_query", "Unknown query function \(fnName)",
-                 NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
-          return;
+      case "orderByChild":
+        ref = ref.queryOrderedByChild(queryDescriptor[1] as! String)
+      case "orderByKey":
+        ref = ref.queryOrderedByKey()
+      case "orderByPriority":
+        ref = ref.queryOrderedByPriority()
+      case "orderByValue":
+        ref = ref.queryOrderedByValue()
+      case "startAt":
+        if (paramCount == 2) {
+          ref = ref.queryStartingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+        } else {
+          ref = ref.queryStartingAtValue(queryDescriptor[1])
+        }
+      case "endAt":
+        if (paramCount == 2) {
+          ref = ref.queryEndingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+        } else {
+          ref = ref.queryEndingAtValue(queryDescriptor[1])
+        }
+      case "equalTo":
+        if (paramCount == 2) {
+          ref = ref.queryEqualToValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+        } else {
+          ref = ref.queryEqualToValue(queryDescriptor[1])
+        }
+      case "limitToFirst":
+        ref = ref.queryLimitedToFirst(queryDescriptor[1] as! UInt)
+      case "limitToLast":
+        ref = ref.queryLimitedToLast(queryDescriptor[1] as! UInt)
+      default:
+        throw FirebaseBridgeError.UnknownQueryFunction(fnName: fnName)
       }
     }
-    if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
-      let uniqueEventName = NSUUID.init()
-      resolve(uniqueEventName.UUIDString)
-      let handle = ref.observeEventType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
-        self.bridge.eventDispatcher().sendAppEventWithName(
-            uniqueEventName.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
-        })
-      
-      self.databaseEventHandles[uniqueEventName.UUIDString] = (ref, handle)
-    } else {
-      reject("unknown_event", "Unknown event type provided \(eventTypeString)", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
-    }
+    return ref;
   }
   
+  
+  // Setup event subscription. eventTypeString should match one of JsDataEventType.
+  // Can't use @objc with string enums so we manually init it below.
+  @objc func once(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    do {
+      let ref = try onRef(databaseUrl, eventTypeString: eventTypeString, query: query);
+      
+      if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
+        let uniqueEventName = NSUUID.init()
+        resolve(uniqueEventName.UUIDString)
+        ref.observeSingleEventOfType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
+          self.bridge.eventDispatcher().sendAppEventWithName(
+            uniqueEventName.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
+        })
+      } else {
+        reject("unknown_event", "Unknown event type provided \(eventTypeString)", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+      }
+    } catch FirebaseBridgeError.UnknownQueryFunction(let fnName) {
+      reject("invalid_query", "Unknown query function \(fnName)",
+             NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    } catch let unknownError {
+      reject("unknown_error", "Unknown query function \(unknownError)",
+             NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }
+  }
+
+  // Setup event subscription. eventTypeString should match one of JsDataEventType.
+  // Can't use @objc with string enums so we manually init it below.
+  @objc func on(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    do {
+      let ref = try onRef(databaseUrl, eventTypeString: eventTypeString, query: query);
+      
+      if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
+        let uniqueEventName = NSUUID.init()
+        resolve(uniqueEventName.UUIDString)
+        let handle = ref.observeEventType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
+          self.bridge.eventDispatcher().sendAppEventWithName(
+            uniqueEventName.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
+        })
+        
+        self.databaseEventHandles[uniqueEventName.UUIDString] = (ref, handle)
+      } else {
+        reject("unknown_event", "Unknown event type provided \(eventTypeString)", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+      }
+    } catch FirebaseBridgeError.UnknownQueryFunction(let fnName) {
+      reject("invalid_query", "Unknown query function \(fnName)",
+             NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    } catch let unknownError {
+      reject("unknown_error", "Unknown query function \(unknownError)",
+             NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }
+  }
+
   @objc func off(uniqueEventName:String) {
     if let (ref, handle) = databaseEventHandles[uniqueEventName] {
       ref.removeObserverWithHandle(handle)
@@ -191,9 +241,20 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
     resolve(convertRef(getRefFromUrl(databaseUrl).childByAutoId()))
   }
   
+  // We receive an array of a single element whh is the value to set
+  @objc func update(databaseUrl:String, value:Dictionary<String, AnyObject>, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefFromUrl(databaseUrl).updateChildValues(value, withCompletionBlock: {(error, ref) in
+      if (error != nil) {
+        reject("set_value_failed", error?.localizedDescription, error)
+      } else {
+        resolve(nil)
+      }
+    })
+  }
+  
   // We receive an array of a single element which is the value to set
   @objc func setValue(databaseUrl:String, value:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    getRefFromUrl(databaseUrl).setValue(value[0])
+    // getRefFromUrl(databaseUrl).setValue(value[0])
     getRefFromUrl(databaseUrl).setValue(value[0], withCompletionBlock: {(error, ref) in
       if (error != nil) {
         reject("set_value_failed", error?.localizedDescription, error)

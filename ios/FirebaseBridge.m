@@ -3,6 +3,12 @@
 
 @interface RCT_EXTERN_MODULE(FirebaseBridgeDatabase, NSObject)
 
+RCT_EXTERN_METHOD(once:(NSString)databaseUrl
+                  eventTypeString:(NSString)eventTypeString
+                  query:NSObject
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(on:(NSString)databaseUrl
                   eventTypeString:(NSString)eventTypeString
                   query:NSObject
@@ -31,7 +37,16 @@ RCT_EXTERN_METHOD(snapshotValue:(NSString)snapshotUUID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(snapshotKey:(NSString)snapshotUUID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(snapshotChildren:(NSString)snapshotUUID
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(update:(NSString)databaseUrl
+                  value:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
