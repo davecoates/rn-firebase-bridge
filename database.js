@@ -303,9 +303,7 @@ export class DatabaseReference extends Query {
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, [value]));
     }
 
-    update(value:any) : Promise {
-        // We wrap value in array for easier handling on Android.
-        // See FirebridgeDatabase.java setValue()
+    update(value:{ [key:string]: any }) : Promise {
         return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.update(locationUrl, value));
     }
