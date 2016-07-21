@@ -8,6 +8,18 @@ import com.google.firebase.database.*;
 import java.lang.reflect.Method;
 import java.util.*;
 
+class InvalidQueryException extends Exception {
+    public InvalidQueryException(String message) {
+        super(message);
+    }
+}
+
+class InvalidQueryParametersException extends Exception {
+    public InvalidQueryParametersException(String message) {
+        super(message);
+    }
+}
+
 class DatabaseReferenceListenerPair {
     public Query ref;
     public ValueEventListener valueListener;
@@ -201,6 +213,21 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
     public void removeValue(String databaseUrl, final Promise promise) {
         DatabaseReference ref = getRefFromUrl(databaseUrl);
         ref.removeValue(new DatabaseReference.CompletionListener() {
+            @Override
+            public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
+                if (databaseError != null) {
+                    promise.reject(databaseError.toException());
+                } else {
+                    promise.resolve(null);
+                }
+            }
+        });
+    }
+
+    @ReactMethod
+    public void update(String databaseUrl, ReadableMap value, final Promise promise) {
+        DatabaseReference ref = getRefFromUrl(databaseUrl);
+        ref.updateChildren(((ReadableNativeMap)value).toHashMap(), new DatabaseReference.CompletionListener() {
             @Override
             public void onComplete(DatabaseError databaseError, DatabaseReference databaseReference) {
                 if (databaseError != null) {
@@ -435,12 +462,7 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
 
     private Map<String, DatabaseReferenceListenerPair> listenersByUUID = new HashMap<>();
 
-    @ReactMethod
-    public void on(String databaseUrl, final String eventType, ReadableArray query, Promise promise) {
-        // This is the event name that will be fired on the JS side whenever
-        // the Firebase event occurs. An event listener is registered here
-        // which then fires the event on the JS bridge.
-        final UUID uniqueEventName = UUID.randomUUID();
+    @ReactMethod Query queryRef(String databaseUrl, ReadableArray query) throws InvalidQueryException, InvalidQueryParametersException {
         Query ref = getRefFromUrl(databaseUrl);
         for (int i = 0; i< query.size(); i++) {
             ReadableArray queryDescriptor = query.getArray(i);
@@ -463,18 +485,13 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                 case "endAt":
                 case "equalTo":
                     if (paramCount < 1 || paramCount > 2) {
-                        promise.reject(
-                                "invalid_query",
-                                fnName + " takes either 1 or two parameters"
-                        );
-                        return;
+                        throw new InvalidQueryParametersException(
+                                fnName + " takes either 1 or two parameters");
                     }
                     if (paramCount == 2 && queryDescriptor.getType(2) != ReadableType.String) {
-                        promise.reject(
-                                "invalid_query",
+                        throw new InvalidQueryParametersException(
                                 fnName + " second parameter must be a string"
                         );
-                        return;
                     }
                     Class<?>[] paramTypes = new Class[paramCount];
                     if (paramCount == 2) {
@@ -514,14 +531,11 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                                 }
                                 break;
                             default:
-                                promise.reject(
-                                        "invalid_query",
-                                        "Unexpected type passed as first parameter to " + fnName + ". Should be Boolean, Number or String."
-                                );
-                                break;
+                                throw new InvalidQueryParametersException(
+                                        "Unexpected type passed as first parameter to " + fnName + ". Should be Boolean, Number or String." );
                         }
                     } catch (Exception e) {
-                        promise.reject(e);
+                        throw new InvalidQueryParametersException(e.getMessage());
                     }
                     break;
                 case "limitToFirst":
@@ -531,9 +545,27 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                     ref = ref.limitToLast(queryDescriptor.getInt(1));
                     break;
                 default:
-                    promise.reject("invalid_query", "Unknown query function " + fnName);
-                    return;
+                    throw new InvalidQueryException("Unknown query function " + fnName);
             }
+        }
+        return ref;
+    }
+
+    @ReactMethod
+    public void on(String databaseUrl, final String eventType, ReadableArray query, Promise promise) {
+        // This is the event name that will be fired on the JS side whenever
+        // the Firebase event occurs. An event listener is registered here
+        // which then fires the event on the JS bridge.
+        final UUID uniqueEventName = UUID.randomUUID();
+        Query ref;
+        try {
+            ref = this.queryRef(databaseUrl, query);
+        } catch (InvalidQueryException e) {
+            promise.reject("invalid_query", e.getMessage());
+            return;
+        } catch (InvalidQueryParametersException e) {
+            promise.reject("invalid_query_parameters", e.getMessage());
+            return;
         }
         switch (eventType) {
             case "value":
@@ -599,6 +631,91 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
+    public void once(String databaseUrl, final String eventType, ReadableArray query, Promise promise) {
+        // This is the event name that will be fired on the JS side whenever
+        // the Firebase event occurs. An event listener is registered here
+        // which then fires the event on the JS bridge.
+        final UUID uniqueEventName = UUID.randomUUID();
+        final Query ref;
+        try {
+            ref = this.queryRef(databaseUrl, query);
+        } catch (InvalidQueryException e) {
+            promise.reject("invalid_query", e.getMessage());
+            return;
+        } catch (InvalidQueryParametersException e) {
+            promise.reject("invalid_query_parameters", e.getMessage());
+            return;
+        }
+        switch (eventType) {
+            case "value":
+                ValueEventListener listener = new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                    }
+                };
+                new DatabaseReferenceListenerPair(ref, listener);
+                ref.addListenerForSingleValueEvent(listener);
+                promise.resolve(uniqueEventName.toString());
+                break;
+            case "child_added":
+            case "child_removed":
+            case "child_changed":
+            case "child_moved":
+                // Android SDK doesn't seem to support single event of these so
+                // we implement it manually to match iOS behaviour.
+                ChildEventListener childListener = new ChildEventListener() {
+                    @Override
+                    public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+                        if (eventType.equals("child_added")) {
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            ref.removeEventListener(this);
+                        }
+                    }
+
+                    @Override
+                    public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+                        if (eventType.equals("child_changed")) {
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            ref.removeEventListener(this);
+                        }
+                    }
+
+                    @Override
+                    public void onChildRemoved(DataSnapshot dataSnapshot) {
+                        if (eventType.equals("child_removed")) {
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            ref.removeEventListener(this);
+                        }
+                    }
+
+                    @Override
+                    public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+                        if (eventType.equals("child_moved")) {
+                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            ref.removeEventListener(this);
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
+                        ref.removeEventListener(this);
+                    }
+                };
+                new DatabaseReferenceListenerPair(ref, childListener);
+                ref.addChildEventListener(childListener);
+                promise.resolve(uniqueEventName.toString());
+                break;
+            default:
+                promise.reject("unknown_event", "Unknown event type " + eventType);
+        }
+    }
+
+    @ReactMethod
     public void off(String uniqueEventName) {
         // uniqueEventName here matches one create in on()
         if (listenersByUUID.containsKey(uniqueEventName)) {
@@ -615,6 +732,16 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
             FirebaseBridgeDatabase.persistenceEnabled = enabled;
             FirebaseDatabase.getInstance().setPersistenceEnabled(enabled);
         }
+    }
+
+    @ReactMethod
+    public void snapshotKey(String snapshotUUID, Promise promise) {
+        DataSnapshot snapshot = snapshotCache.get(snapshotUUID);
+        if (null == snapshot) {
+            promise.reject("snapshot_not_found", "Snapshot not found; it may have been released.");
+            return;
+        }
+        promise.resolve(snapshot.getKey());
     }
 
 }
