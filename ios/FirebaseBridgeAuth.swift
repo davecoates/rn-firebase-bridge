@@ -25,6 +25,61 @@ func userToDict(user:FIRUser) -> Dictionary<String, AnyObject> {
   return data
 }
 
+func authErrorCodeToString(code:FIRAuthErrorCode) -> String {
+  switch (code) {
+  case .ErrorCodeUserDisabled:
+    return "auth/user-disabled"
+  case .ErrorCodeInvalidEmail:
+    return "auth/invalid-email"
+  case .ErrorCodeWrongPassword:
+    return "auth/wrong-password"
+  case .ErrorCodeUserNotFound:
+    return "auth/user-not-found"
+  case .ErrorCodeAppNotAuthorized:
+    return "auth/app-not-authorized"
+  case .ErrorCodeCredentialAlreadyInUse:
+    return "auth/credential-already-in-use"
+  case .ErrorCodeInvalidCustomToken:
+    return "auth/invalid-custom-token"
+  case .ErrorCodeCustomTokenMismatch:
+    return "auth/custom-token-mismatch"
+  case .ErrorCodeEmailAlreadyInUse:
+    return "auth/email-already-in-use"
+  case .ErrorCodeInvalidAPIKey:
+    return "auth/invalid-api-key"
+  case .ErrorCodeInvalidCredential:
+    return "auth/invalid-credential"
+  case .ErrorCodeInvalidUserToken:
+    return "auth/invalid-user-token"
+  case .ErrorCodeNetworkError:
+    return "auth/network-request-failed"
+  case .ErrrorCodeAccountExistsWithDifferentCredential:
+    return "auth/account-exists-with-different-credential"
+  case .ErrorCodeWeakPassword:
+    return "auth/weak-password"
+  case .ErrorCodeTooManyRequests:
+    return "auth/too-many-requests"
+  case .ErrorCodeOperationNotAllowed:
+    return "auth/operation-not-allowed"
+  case .ErrorCodeRequiresRecentLogin:
+    return "auth/requires-recent-login"
+  case .ErrorCodeUserTokenExpired:
+    return "auth/user-token-expired"
+    
+  // These codes don't have equivalent in javascript API
+  case .ErrorCodeInternalError:
+    return "auth/internal-error"
+  case .ErrorCodeUserMismatch:
+    return "auth/user-mismatch"
+  case .ErrorCodeKeychainError:
+    return "auth/keychain-error"
+  case .ErrorCodeProviderAlreadyLinked:
+    return "auth/provider-already-linked"
+  case .ErrorCodeNoSuchProvider:
+    return "auth/no-such-provider"
+  }
+}
+
 
 @objc(FirebaseBridgeAuth)
 class FirebaseBridgeAuth: NSObject, RCTInvalidating {
@@ -56,12 +111,14 @@ class FirebaseBridgeAuth: NSObject, RCTInvalidating {
   
   @objc func createUserWithEmail(email:String, password:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     FIRAuth.auth()?.createUserWithEmail(email, password: password) { (user, error) in
-      if (user == nil) {
-        var name = ""
-        if let userInfo = error?.userInfo as? Dictionary<String, AnyObject> {
-          name = userInfo["error_name"] as! String
+      if let error = error {
+        var code = ""
+        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
+          code = authErrorCodeToString(errorCode)
+        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
+          code = userInfo["error_name"] as! String
         }
-        reject(name, error?.localizedDescription, error);
+        reject(code, error.localizedDescription, error);
         return;
       }
       
@@ -71,12 +128,14 @@ class FirebaseBridgeAuth: NSObject, RCTInvalidating {
   
   @objc func signInWithEmail(email:String, password:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     FIRAuth.auth()?.signInWithEmail(email, password: password) { (user, error) in
-      if (user == nil) {
-        var name = ""
-        if let userInfo = error?.userInfo as? Dictionary<String, AnyObject> {
-          name = userInfo["error_name"] as! String
+      if let error = error {
+        var code = ""
+        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
+          code = authErrorCodeToString(errorCode)
+        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
+          code = userInfo["error_name"] as! String
         }
-        reject(name, error?.localizedDescription, error);
+        reject(code, error.localizedDescription, error);
         return;
       }
       
@@ -86,12 +145,14 @@ class FirebaseBridgeAuth: NSObject, RCTInvalidating {
   
   @objc func signInAnonymously(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     FIRAuth.auth()?.signInAnonymouslyWithCompletion() { (user, error) in
-      if (user == nil) {
-        var name = ""
-        if let userInfo = error?.userInfo as? Dictionary<String, AnyObject> {
-          name = userInfo["error_name"] as! String
+      if let error = error {
+        var code = ""
+        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
+          code = authErrorCodeToString(errorCode)
+        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
+          code = userInfo["error_name"] as! String
         }
-        reject(name, error?.localizedDescription, error);
+        reject(code, error.localizedDescription, error);
         return;
       }
       

@@ -88,13 +88,31 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
   @ReactMethod
   public void signInWithEmail(String email, String password, final Promise promise) {
     FirebaseAuth.getInstance().signInWithEmailAndPassword(email, password)
-            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+            .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
               @Override
-              public void onComplete(@NonNull Task<AuthResult> task) {
-                try {
-                  AuthResult result = task.getResult();
-                  promise.resolve(convertUser(result.getUser()));
-                } catch (RuntimeExecutionException e) {
+              public void onSuccess(AuthResult result) {
+                promise.resolve(convertUser(result.getUser()));
+              }
+            })
+            .addOnFailureListener(new OnFailureListener() {
+              @Override
+              public void onFailure(@NonNull Exception e) {
+                // Error codes as per https://firebase.google.com/docs/reference/js/firebase.auth.Auth#createUserWithEmailAndPassword
+                if (e instanceof FirebaseAuthInvalidUserException) {
+                  String code = ((FirebaseAuthInvalidUserException)e).getErrorCode();
+                  if (code.equals("ERROR_USER_DISABLED")) {
+                    promise.reject("auth/user-disabled", e.getMessage());
+                  } else {
+                    promise.reject("auth/user-not-found", e.getMessage());
+                  }
+                } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                  String code = ((FirebaseAuthInvalidCredentialsException) e).getErrorCode();
+                  if (code.equals("ERROR_INVALID_EMAIL")) {
+                    promise.reject("auth/invalid-email", e.getMessage());
+                  } else {
+                    promise.reject("auth/wrong-password", e.getMessage());
+                  }
+                } else {
                   promise.reject(e);
                 }
               }
