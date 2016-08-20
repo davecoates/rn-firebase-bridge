@@ -99,7 +99,7 @@ Error code will match one of the values described [here](https://firebase.google
 
 ### signInWithCredential(credential:AuthCredential) : Promise<User>
 
-Create credential's using relevant provider (see below). iOS only currently.
+Create credential's using relevant provider (see below).
 
 ```
 import { signInWithCredential } from 'rn-firebase-bridge/auth';
