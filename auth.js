@@ -14,8 +14,8 @@ const createUserWithEmail:(email:string, password:string) => Promise<User> =
 const signInWithEmail:(email:string, password:string) => Promise<User> =
     NativeFirebaseBridgeAuth.signInWithEmail;
 
-function signInWithCredential(credential:AuthCredential) : Promise<User> {
-    return NativeFirebaseBridgeAuth.signInWithCredential(credential.id);
+async function signInWithCredential(credential:AuthCredential|Promise<AuthCredential>) : Promise<User> {
+    return NativeFirebaseBridgeAuth.signInWithCredential((await credential).id);
 }
 
 const signInAnonymously:() => Promise<User> =
@@ -55,25 +55,25 @@ function addAuthStateDidChangeListener(cb:AuthStateListener) : () => void {
 }
 
 const FacebookAuthProvider = {
-    credential(token:string) : AuthCredential {
+    credential(token:string) : Promise<AuthCredential> {
         return FirebaseBridgeFacebookAuthProvider.credential(token);
     },
 };
 
 const TwitterAuthProvider = {
-    credential(token:string, secret:string) : AuthCredential {
+    credential(token:string, secret:string) : Promise<AuthCredential> {
         return FirebaseBridgeTwitterAuthProvider.credential(token, secret);
     },
 };
 
 const GoogleAuthProvider = {
-    credential(idToken:string, accessToken:string) : AuthCredential {
+    credential(idToken:string, accessToken:string) : Promise<AuthCredential> {
         return FirebaseBridgeGoogleAuthProvider.credential(idToken, accessToken);
     },
 };
 
 const GithubAuthProvider = {
-    credential(token:string) : AuthCredential {
+    credential(token:string) : Promise<AuthCredential> {
         return FirebaseBridgeGithubAuthProvider.credential(token);
     },
 };
