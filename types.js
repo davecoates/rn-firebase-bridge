@@ -66,3 +66,9 @@ export type DataSnapshotDescriptor = {
     uuid: string;
     priority: number;
 };
+
+type AuthCredential = {
+    id: string;
+    provider: string;
+};
+

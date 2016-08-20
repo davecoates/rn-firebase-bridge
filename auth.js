@@ -1,12 +1,22 @@
 // @flow
 import { NativeModules, NativeAppEventEmitter } from 'react-native';
-import type { User } from './types';
+import type { User, AuthCredential } from './types';
 const NativeFirebaseBridgeAuth = NativeModules.FirebaseBridgeAuth;
+const {
+    FirebaseBridgeFacebookAuthProvider,
+    FirebaseBridgeTwitterAuthProvider,
+    FirebaseBridgeGoogleAuthProvider,
+    FirebaseBridgeGithubAuthProvider,
+} = NativeModules;
 
 const createUserWithEmail:(email:string, password:string) => Promise<User> =
     NativeFirebaseBridgeAuth.createUserWithEmail;
 const signInWithEmail:(email:string, password:string) => Promise<User> =
     NativeFirebaseBridgeAuth.signInWithEmail;
+
+function signInWithCredential(credential:AuthCredential) : Promise<User> {
+    return NativeFirebaseBridgeAuth.signInWithCredential(credential.id);
+}
 
 const signInAnonymously:() => Promise<User> =
     NativeFirebaseBridgeAuth.signInAnonymously;
@@ -44,11 +54,40 @@ function addAuthStateDidChangeListener(cb:AuthStateListener) : () => void {
     };
 }
 
+const FacebookAuthProvider = {
+    credential(token:string) : AuthCredential {
+        return FirebaseBridgeFacebookAuthProvider.credential(token);
+    },
+};
+
+const TwitterAuthProvider = {
+    credential(token:string, secret:string) : AuthCredential {
+        return FirebaseBridgeTwitterAuthProvider.credential(token, secret);
+    },
+};
+
+const GoogleAuthProvider = {
+    credential(idToken:string, accessToken:string) : AuthCredential {
+        return FirebaseBridgeGoogleAuthProvider.credential(idToken, accessToken);
+    },
+};
+
+const GithubAuthProvider = {
+    credential(token:string) : AuthCredential {
+        return FirebaseBridgeGithubAuthProvider.credential(token);
+    },
+};
+
 export default {
+    addAuthStateDidChangeListener,
     createUserWithEmail,
     signInWithEmail,
     signInAnonymously,
-    addAuthStateDidChangeListener,
+    signInWithCredential,
+    FacebookAuthProvider,
+    GithubAuthProvider,
+    TwitterAuthProvider,
+    GoogleAuthProvider,
 };
 
 export {
@@ -56,4 +95,9 @@ export {
     createUserWithEmail,
     signInWithEmail,
     signInAnonymously,
+    signInWithCredential,
+    FacebookAuthProvider,
+    GithubAuthProvider,
+    TwitterAuthProvider,
+    GoogleAuthProvider,
 };

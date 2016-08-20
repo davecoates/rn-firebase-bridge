@@ -19,7 +19,7 @@ func userToDict(user:FIRUser) -> Dictionary<String, AnyObject> {
     data["displayName"] = displayName
   }
   if let photoURL = user.photoURL {
-    data["photoURL"] = photoURL
+    data["photoURL"] = photoURL.absoluteString
   }
   
   return data
@@ -160,6 +160,29 @@ class FirebaseBridgeAuth: NSObject, RCTInvalidating {
     }
   }
   
+  @objc func signInWithCredential(credentialId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let credential = FirebaseBridgeCredentialCache.getCredential(credentialId) {
+      
+      FIRAuth.auth()?.signInWithCredential(credential, completion: { (user, error) in
+        if let error = error {
+          var code = ""
+          if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
+            code = authErrorCodeToString(errorCode)
+          } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
+            code = userInfo["error_name"] as! String
+          }
+          reject(code, error.localizedDescription, error);
+          return;
+        }
+        
+        resolve(userToDict(user!));
+      }
+      )
+    } else {
+      reject("credential_not_found", "Credential not found", NSError(domain: "FirebaseBridgeAuth", code: 0, userInfo: nil));
+    }
+  }
   
+    
 }
 

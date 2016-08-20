@@ -97,6 +97,21 @@ signInWithEmail('test@example.com', 'pass1234').then(
 
 Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInWithEmailAndPassword)
 
+### signInWithCredential(credential:AuthCredential) : Promise<User>
+
+Create credential's using relevant provider (see below). iOS only currently.
+
+```
+import { signInWithCredential } from 'rn-firebase-bridge/auth';
+
+signInWithCredential(credential).then(
+    user => console.log(user),
+    error => console.log(error)
+);
+```
+
+Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInWithCredential)
+
 ### signInAnonymously() : Promise<User>
 
 ```
@@ -118,6 +133,43 @@ import { addAuthStateDidChangeListener } from 'rn-firebase-bridge/auth';
 addAuthStateDidChangeListener(payload => {
     console.log(payload.user);
 });
+```
+
+### FacebookAuthProvider
+
+```
+import { FacebookAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
+
+// Get token using Facebook SDK
+const credential = FacebookAuthProvider.credential(token);
+signInWithCredential(credential);
+```
+
+### TwitterAuthProvider
+
+```
+import { TwitterAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
+
+const credential = FacebookAuthProvider.credential(token, secret);
+signInWithCredential(credential);
+```
+
+### GithubAuthProvider
+
+```
+import { GithubAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
+
+const credential = GithubAuthProvider.credential(token);
+signInWithCredential(credential);
+```
+
+### GoogleAuthProvider
+
+```
+import { GoogleAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
+
+const credential = GoogleAuthProvider.credential(idToken, accessToken);
+signInWithCredential(credential);
 ```
 
 ## Database

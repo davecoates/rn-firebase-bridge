@@ -98,5 +98,41 @@ RCT_EXTERN_METHOD(signInWithEmail:(NSString)email
 
 RCT_EXTERN_METHOD(signInAnonymously:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(signInWithCredential:(NSString)credentialId
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 @end
 
+@interface RCT_EXTERN_MODULE(FirebaseBridgeFacebookAuthProvider, NSObject)
+
+RCT_EXTERN_METHOD(credential:(NSString)token
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+@end
+
+
+@interface RCT_EXTERN_MODULE(FirebaseBridgeGithubAuthProvider, NSObject)
+
+RCT_EXTERN_METHOD(credential:(NSString)token
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+@end
+
+
+@interface RCT_EXTERN_MODULE(FirebaseBridgeTwitterAuthProvider, NSObject)
+
+RCT_EXTERN_METHOD(credential:(NSString)token
+                  secret:NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+@end
+
+
+@interface RCT_EXTERN_MODULE(FirebaseBridgeGoogleAuthProvider, NSObject)
+
+RCT_EXTERN_METHOD(credential:(NSString)idToken
+                  accessToken:NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+@end
