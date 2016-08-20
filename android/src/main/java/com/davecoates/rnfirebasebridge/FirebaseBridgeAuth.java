@@ -161,4 +161,43 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
             });
   }
 
+   @ReactMethod
+  public void signInWithCredential(String id, final Promise promise) {
+     AuthCredential credential = FirebaseBridgeCredentialCache.getCredential(id);
+     if (credential == null) {
+       promise.reject("auth/credential-not-found", "Credential not found");
+       return;
+     }
+     FirebaseAuth.getInstance().signInWithCredential(credential)
+             .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+               @Override
+               public void onSuccess(AuthResult result) {
+                 promise.resolve(convertUser(result.getUser()));
+               }
+             })
+             .addOnFailureListener(new OnFailureListener() {
+               @Override
+               public void onFailure(@NonNull Exception e) {
+                 // Error codes as per https://firebase.google.com/docs/reference/js/firebase.auth.Auth#createUserWithEmailAndPassword
+                 if (e instanceof FirebaseAuthInvalidUserException) {
+                   String code = ((FirebaseAuthInvalidUserException)e).getErrorCode();
+                   if (code.equals("ERROR_USER_DISABLED")) {
+                     promise.reject("auth/user-disabled", e.getMessage());
+                   } else {
+                     promise.reject("auth/user-not-found", e.getMessage());
+                   }
+                 } else if (e instanceof FirebaseAuthInvalidCredentialsException) {
+                   String code = ((FirebaseAuthInvalidCredentialsException) e).getErrorCode();
+                   if (code.equals("ERROR_INVALID_EMAIL")) {
+                     promise.reject("auth/invalid-email", e.getMessage());
+                   } else {
+                     promise.reject("auth/wrong-password", e.getMessage());
+                   }
+                 } else {
+                   promise.reject(e);
+                 }
+               }
+             });
+   }
+
 }

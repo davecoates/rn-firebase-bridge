@@ -179,7 +179,7 @@ class FirebaseBridgeAuth: NSObject, RCTInvalidating {
       }
       )
     } else {
-      reject("credential_not_found", "Credential not found", NSError(domain: "FirebaseBridgeAuth", code: 0, userInfo: nil));
+      reject("auth/credential-not-found", "Credential not found", NSError(domain: "FirebaseBridgeAuth", code: 0, userInfo: nil));
     }
   }
   
