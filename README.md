@@ -125,6 +125,10 @@ signInAnonymously().then(
 
 Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInAnonymously)
 
+### signOut() : Promise<null>
+
+Sign user out.
+
 ### addAuthStateDidChangeListener(callback:({user:User}) -> void)
 
 ```

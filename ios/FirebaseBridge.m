@@ -102,6 +102,9 @@ RCT_EXTERN_METHOD(signInAnonymously:(RCTPromiseResolveBlock)resolve
 RCT_EXTERN_METHOD(signInWithCredential:(NSString)credentialId
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(signOut:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
 @end
 
 @interface RCT_EXTERN_MODULE(FirebaseBridgeFacebookAuthProvider, NSObject)

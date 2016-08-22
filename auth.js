@@ -1,5 +1,5 @@
 // @flow
-import { NativeModules, NativeAppEventEmitter } from 'react-native';
+import { NativeModules, NativeEventEmitter } from 'react-native';
 import type { User, AuthCredential } from './types';
 const NativeFirebaseBridgeAuth = NativeModules.FirebaseBridgeAuth;
 const {
@@ -21,17 +21,20 @@ async function signInWithCredential(credential:AuthCredential|Promise<AuthCreden
 const signInAnonymously:() => Promise<User> =
     NativeFirebaseBridgeAuth.signInAnonymously;
 
+const signOut:() => Promise<null> =
+    NativeFirebaseBridgeAuth.signOut;
 type AuthStateListener = (user:User) => void;
 
 const authStateDidChangeListeners:Array<AuthStateListener> = [];
 
 let authUser:User;
-NativeAppEventEmitter.addListener(
-  'authStateDidChange',
-  (user:User) => {
-      authUser = user;
-      authStateDidChangeListeners.forEach(cb => cb(user));
-  }
+const authEmitter = new NativeEventEmitter(NativeFirebaseBridgeAuth);
+const subscription = authEmitter.addListener(
+    'authStateDidChange',
+    (user:User) => {
+        authUser = user;
+        authStateDidChangeListeners.forEach(cb => cb(user));
+    }
 );
 
 let authStateDidChangeListenerRegistered = false;
@@ -96,6 +99,7 @@ export {
     signInWithEmail,
     signInAnonymously,
     signInWithCredential,
+    signOut,
     FacebookAuthProvider,
     GithubAuthProvider,
     TwitterAuthProvider,
