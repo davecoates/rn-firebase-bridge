@@ -64,7 +64,18 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
         return m;
     }
 
-    private FirebaseAuth.AuthStateListener mAuthListener;
+    private FirebaseAuth.AuthStateListener mAuthListener
+
+    @ReactMethod
+    public void currentUser(final Promise promise) {
+        FirebaseUser user = mAuth.getCurrentUser();
+
+        if (user != null) {
+            promise.resolve(convertUser(user));
+        } else {
+            promise.resolve(null);
+        }
+    };
 
     @ReactMethod
     public void addAuthStateDidChangeListener() {
