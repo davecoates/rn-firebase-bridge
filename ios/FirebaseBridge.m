@@ -105,7 +105,30 @@ RCT_EXTERN_METHOD(signInWithCredential:(NSString)credentialId
 
 RCT_EXTERN_METHOD(signOut:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
+
 @end
+
+@interface RCT_EXTERN_MODULE(FirebaseBridgeUser, NSObject)
+
+RCT_EXTERN_METHOD(updateEmail:(NSString)email
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(updatePassword:(NSString)email
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+
+RCT_EXTERN_METHOD(sendEmailVerification:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(reauthenticateWithCredential:(NSString)credentialId
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+
+@end
+
 
 @interface RCT_EXTERN_MODULE(FirebaseBridgeFacebookAuthProvider, NSObject)
 
