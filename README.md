@@ -74,12 +74,21 @@ string | number | null
 
 ## Auth
 
+### currentUser
+
+Current user, if any. Also accessible by calling `getCurrentUser()`.
+
+```
+import auth from 'rn-firebase-bridge/auth';
+
+console.log(auth.currentUser);
+console.log(auth.getCurrentUser())
+```
+
 ### createUserWithEmail(email:string, password:string) : Promise<User>
 
 ```
-import { createuserWithEmail } from 'rn-firebase-bridge/auth';
-
-createUserWithEmail('test@example.com', 'pass1234').then(user => {
+auth.createUserWithEmail('test@example.com', 'pass1234').then(user => {
     console.log(user.email, user.uuid);
 });
 ```
@@ -87,9 +96,7 @@ createUserWithEmail('test@example.com', 'pass1234').then(user => {
 ### signInWithEmail(email:string, password:string) : Promise<User>
 
 ```
-import { createuserWithEmail } from 'rn-firebase-bridge/auth';
-
-signInWithEmail('test@example.com', 'pass1234').then(
+auth.signInWithEmail('test@example.com', 'pass1234').then(
     user => console.log(user),
     error => console.log(error)
 );
@@ -102,9 +109,7 @@ Error code will match one of the values described [here](https://firebase.google
 Create credential's using relevant provider (see below).
 
 ```
-import { signInWithCredential } from 'rn-firebase-bridge/auth';
-
-signInWithCredential(credential).then(
+auth.signInWithCredential(credential).then(
     user => console.log(user),
     error => console.log(error)
 );
@@ -115,9 +120,7 @@ Error code will match one of the values described [here](https://firebase.google
 ### signInAnonymously() : Promise<User>
 
 ```
-import { signInAnonymously } from 'rn-firebase-bridge/auth';
-
-signInAnonymously().then(
+auth.signInAnonymously().then(
     user => console.log(user),
     error => console.log(error)
 );
@@ -129,33 +132,31 @@ Error code will match one of the values described [here](https://firebase.google
 
 Sign user out.
 
-### addAuthStateDidChangeListener(callback:({user:User}) -> void)
+```
+auth.signOut().then(() => console.log('log out complete'));
+```
+
+### onAuthStateChanged(callback:({user:User}) -> void)
 
 ```
-import { addAuthStateDidChangeListener } from 'rn-firebase-bridge/auth';
-
-addAuthStateDidChangeListener(payload => {
-    console.log(payload.user);
+auth.onAuthStateChanged(user => {
+    console.log(user);
 });
 ```
 
 ### FacebookAuthProvider
 
 ```
-import { FacebookAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
-
 // Get token using Facebook SDK
-const credential = FacebookAuthProvider.credential(token);
-signInWithCredential(credential);
+const credential = auth.FacebookAuthProvider.credential(token);
+auth.signInWithCredential(credential);
 ```
 
 ### TwitterAuthProvider
 
 ```
-import { TwitterAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
-
-const credential = FacebookAuthProvider.credential(token, secret);
-signInWithCredential(credential);
+const credential = auth.FacebookAuthProvider.credential(token, secret);
+auth.signInWithCredential(credential);
 ```
 
 ### GithubAuthProvider
@@ -170,10 +171,8 @@ signInWithCredential(credential);
 ### GoogleAuthProvider
 
 ```
-import { GoogleAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
-
-const credential = GoogleAuthProvider.credential(idToken, accessToken);
-signInWithCredential(credential);
+const credential = auth.GoogleAuthProvider.credential(idToken, accessToken);
+auth.signInWithCredential(credential);
 ```
 
 ## Database

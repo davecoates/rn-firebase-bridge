@@ -2,15 +2,11 @@ package com.davecoates.rnfirebasebridge;
 
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 import com.facebook.react.bridge.*;
-import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.modules.core.RCTNativeAppEventEmitter;
 import com.google.android.gms.tasks.*;
 import com.google.firebase.auth.*;
 
-import java.util.Map;
-import java.util.HashMap;
 
 public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
 
@@ -39,6 +35,11 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
         reactContext.addLifecycleEventListener(listener);
     }
 
+    @Override
+    public void initialize() {
+        this.addAuthStateDidChangeListener();
+    }
+
     private void sendEvent(String eventName,
                            @Nullable WritableMap params) {
         ReactContext reactContext = getReactApplicationContext();
@@ -64,10 +65,10 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
         return m;
     }
 
-    private FirebaseAuth.AuthStateListener mAuthListener
+    private FirebaseAuth.AuthStateListener mAuthListener;
 
     @ReactMethod
-    public void currentUser(final Promise promise) {
+    public void getCurrentUser(final Promise promise) {
         FirebaseUser user = mAuth.getCurrentUser();
 
         if (user != null) {
@@ -77,7 +78,6 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
         }
     };
 
-    @ReactMethod
     public void addAuthStateDidChangeListener() {
         if (mAuthListener == null) {
 

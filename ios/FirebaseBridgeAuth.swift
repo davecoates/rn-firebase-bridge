@@ -92,6 +92,7 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
   
   override init() {
     super.init()
+    addAuthStateDidChangeListener()
   }
   
   override func supportedEvents() -> [String]! {
@@ -104,7 +105,7 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
       if (user == nil) {
         self.sendEventWithName("authStateDidChange", body: nil)
       } else {
-        self.sendEventWithName("authStateDidChange", body: ["user": userToDict(user!)])
+        self.sendEventWithName("authStateDidChange", body: userToDict(user!))
       }
     })
   }
@@ -197,6 +198,15 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
       reject(code, error.localizedDescription, error);
     }
   }
+  
+  @objc func getCurrentUser(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let user = FIRAuth.auth()?.currentUser {
+      resolve(userToDict(user))
+    } else {
+      resolve(nil)
+    }
+  }
+  
   
 }
 

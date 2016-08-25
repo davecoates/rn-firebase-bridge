@@ -82,9 +82,7 @@ RCT_EXTERN_METHOD(setPersistenceEnabled:(BOOL)enabled)
 
 @end
 
-@interface RCT_EXTERN_MODULE(FirebaseBridgeAuth, NSObject)
-
-RCT_EXTERN_METHOD(addAuthStateDidChangeListener)
+@interface RCT_EXTERN_MODULE(FirebaseBridgeAuth, RCTEventEmitter)
 
 RCT_EXTERN_METHOD(createUserWithEmail:(NSString)email
                   password:NSString
@@ -104,6 +102,9 @@ RCT_EXTERN_METHOD(signInWithCredential:(NSString)credentialId
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(signOut:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(getCurrentUser:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 @end
 

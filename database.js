@@ -6,6 +6,7 @@ import type {
     DataSnapshotDescriptor,
     DataSnapshot as DataSnapshotType,
     DatabaseReference as DatabaseReferenceType,
+    DatabaseReferenceDescriptor,
     Query as QueryType,
     Priority,
 } from './types';
@@ -75,8 +76,8 @@ export class DataSnapshot {
      *    }
      * })
      */
-    forEach(cb:(snapshot:DataSnapshotType) => Promise) : Promise {
-        const wrapCb = (data:DataSnapshotDescriptor) => {
+    forEach(cb:(snapshot:DataSnapshotType) => Promise<?boolean>) : Promise<void> {
+        const wrapCb = (data:DataSnapshotDescriptor) : Promise<?boolean> => {
             const snapshot:DataSnapshotType = new DataSnapshot(data);
             const promise = cb(snapshot);
             invariant(promise && typeof promise.then == 'function',
@@ -117,10 +118,10 @@ export class DataSnapshot {
 
 export class Query {
 
-    parentPromise: Promise;
+    parentPromise: Promise<DatabaseReferenceDescriptor>;
     query:Array<Array<any>>;
 
-    constructor(parentPromise:Promise, query:Array<Array<any>> = []) {
+    constructor(parentPromise:Promise<DatabaseReferenceDescriptor>, query:Array<Array<any>> = []) {
         this.parentPromise = parentPromise;
         this.query = query;
     }
@@ -161,7 +162,7 @@ export class Query {
      * Subscribe to an event.
      * @return {Function} a function that will unsubscribe from this event
      */
-    on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise)) : () => void {
+    on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise<void>)) : () => void {
         const p = this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(
                 locationUrl, eventType, this.query))
@@ -208,7 +209,7 @@ export class Query {
         };
     }
 
-    once(eventType:EventType, cb:((snapshot:DataSnapshot) => Promise)) : () => void {
+    once(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise<void>)) : () => void {
         const p = this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.once(
                 locationUrl, eventType, this.query))
@@ -280,7 +281,7 @@ export class Query {
 
 export class DatabaseReference extends Query {
 
-    constructor(parentPromise:?Promise = null) {
+    constructor(parentPromise:?Promise<DatabaseReferenceDescriptor> = null) {
         super((parentPromise || Promise.resolve({})));
     }
 
@@ -296,19 +297,19 @@ export class DatabaseReference extends Query {
         return new DatabaseReference(promise);
     }
 
-    setValue(value:any) : Promise {
+    setValue(value:any) : Promise<void> {
         // We wrap value in array for easier handling on Android.
         // See FirebridgeDatabase.java setValue()
         return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, [value]));
     }
 
-    update(value:{ [key:string]: any }) : Promise {
+    update(value:{ [key:string]: any }) : Promise<void> {
         return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.update(locationUrl, value));
     }
 
-    setValueWithPriority(value:any, priority:Priority) : Promise {
+    setValueWithPriority(value:any, priority:Priority) : Promise<void> {
         // We wrap value in array for easier handling on Android.
         // See FirebridgeDatabase.java setValue()
         return this.parentPromise.then(
@@ -316,7 +317,7 @@ export class DatabaseReference extends Query {
                 locationUrl, [value], [priority]));
     }
 
-    setPriority(priority:Priority) : Promise {
+    setPriority(priority:Priority) : Promise<void> {
         // We wrap priority in array for easier handling on Android.
         // See FirebridgeDatabase.java setPriority()
         return this.parentPromise.then(
@@ -324,7 +325,7 @@ export class DatabaseReference extends Query {
         );
     }
 
-    remove() : Promise {
+    remove() : Promise<void> {
         return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.removeValue(locationUrl));
     }
