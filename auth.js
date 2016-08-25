@@ -21,6 +21,9 @@ async function signInWithCredential(credential:AuthCredential|Promise<AuthCreden
 const signInAnonymously:() => Promise<User> =
     NativeFirebaseBridgeAuth.signInAnonymously;
 
+const currentUser:() => Promise<User> = 
+    NativeFirebaseBridgeAuth.currentUser;
+
 const signOut:() => Promise<null> =
     NativeFirebaseBridgeAuth.signOut;
 type AuthStateListener = (user:User) => void;
@@ -87,6 +90,8 @@ export default {
     signInWithEmail,
     signInAnonymously,
     signInWithCredential,
+    signOut,
+    currentUser,
     FacebookAuthProvider,
     GithubAuthProvider,
     TwitterAuthProvider,
@@ -100,6 +105,7 @@ export {
     signInAnonymously,
     signInWithCredential,
     signOut,
+    currentUser,
     FacebookAuthProvider,
     GithubAuthProvider,
     TwitterAuthProvider,
