@@ -1,15 +1,28 @@
 #import "FirebaseBridge.h"
 
+@interface RCT_EXTERN_MODULE(FirebaseBridgeApp, NSObject)
+
+RCT_EXTERN_METHOD(initializeApp:NSObject
+                  name:(NSString)name
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(initializeDefaultApp:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+@end
 
 @interface RCT_EXTERN_MODULE(FirebaseBridgeDatabase, NSObject)
 
-RCT_EXTERN_METHOD(once:(NSString)databaseUrl
+RCT_EXTERN_METHOD(once:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   eventTypeString:(NSString)eventTypeString
                   query:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(on:(NSString)databaseUrl
+RCT_EXTERN_METHOD(on:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   eventTypeString:(NSString)eventTypeString
                   query:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
@@ -45,36 +58,58 @@ RCT_EXTERN_METHOD(snapshotChildren:(NSString)snapshotUUID
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(update:(NSString)databaseUrl
+RCT_EXTERN_METHOD(update:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   value:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(setValue:(NSString)databaseUrl
+RCT_EXTERN_METHOD(setValue:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   value:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(setValueWithPriority:(NSString)databaseUrl
+RCT_EXTERN_METHOD(setValueWithPriority:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   value:NSObject
                   priority:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(setPriority:(NSString)databaseUrl
+RCT_EXTERN_METHOD(setPriority:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   priority:NSObject
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(removeValue:(NSString)databaseUrl
+RCT_EXTERN_METHOD(removeValue:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(child:(NSString)databaseUrl
+RCT_EXTERN_METHOD(child:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   path:(NSString)path
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
-RCT_EXTERN_METHOD(push:(NSString)databaseUrl
+RCT_EXTERN_METHOD(push:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(ref:(NSString)appName
+                  path:(NSString)path
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(parent:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(root:(NSString)appName
+                  databaseUrl:(NSString)databaseUrl
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

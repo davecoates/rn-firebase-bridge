@@ -111,10 +111,11 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   
   enum FirebaseBridgeError: ErrorType {
     case UnknownQueryFunction(fnName: String)
+    case AppNotFound(appName: String)
   }
   
-  @objc func onRef(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]]) throws -> FIRDatabaseQuery {
-    var ref:FIRDatabaseQuery = getRefFromUrl(databaseUrl)
+  @objc func onRef(appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]]) throws -> FIRDatabaseQuery {
+    var ref:FIRDatabaseQuery = try getRefFromUrl(appName, databaseUrl: databaseUrl)
     for queryDescriptor in query {
       // Each query is array; first element is function name and rest
       // are arguments to that function
@@ -161,9 +162,9 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   
   // Setup event subscription. eventTypeString should match one of JsDataEventType.
   // Can't use @objc with string enums so we manually init it below.
-  @objc func once(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func once(appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     do {
-      let ref = try onRef(databaseUrl, eventTypeString: eventTypeString, query: query);
+      let ref = try onRef(appName, databaseUrl: databaseUrl, eventTypeString: eventTypeString, query: query);
       
       if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
         let uniqueEventName = NSUUID.init()
@@ -186,9 +187,9 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
 
   // Setup event subscription. eventTypeString should match one of JsDataEventType.
   // Can't use @objc with string enums so we manually init it below.
-  @objc func on(databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func on(appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     do {
-      let ref = try onRef(databaseUrl, eventTypeString: eventTypeString, query: query);
+      let ref = try onRef(appName, databaseUrl: databaseUrl, eventTypeString: eventTypeString, query: query);
       
       if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
         let uniqueEventName = NSUUID.init()
@@ -224,75 +225,165 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
     ]
   }
   
-  func getRefFromUrl(databaseUrl: String?) -> FIRDatabaseReference {
-    let url = databaseUrl ?? ""
-    if !url.isEmpty {
-      return FIRDatabase.database().referenceFromURL(url)
+  
+  func getRefFromUrl(appName: String, databaseUrl: String?) throws -> FIRDatabaseReference {
+    if let app = FIRApp(named: appName) {
+      let database = FIRDatabase.database(app: app)
+      if let url = databaseUrl where !url.isEmpty {
+        return database.referenceFromURL(url)
+      }
+      return database.reference()
+    } else {
+      throw FirebaseBridgeError.AppNotFound(appName: appName)
     }
-    return FIRDatabase.database().reference()
   }
   
-  @objc func child(databaseUrl: String?, path:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    resolve(convertRef(getRefFromUrl(databaseUrl).child(path)))
+  func getRefRomUrl(appName: String,
+                    databaseUrl: String?,
+                    success: (ref: FIRDatabaseReference) -> Void,
+                    rejecter reject: RCTPromiseRejectBlock)
+  {
+    do {
+      let ref = try getRefFromUrl(appName, databaseUrl: databaseUrl)
+      success(ref: ref)
+    } catch FirebaseBridgeError.AppNotFound(let appName) {
+      reject("unknown_app", "Unknown app \(appName)",
+             NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    } catch let unknownError {
+      reject("unknown_error", "Unknown error \(unknownError)",
+             NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }
+  }
+  
+  @objc func child(appName: String, databaseUrl: String?, path:String,
+                   resolver resolve: RCTPromiseResolveBlock,
+                   rejecter reject: RCTPromiseRejectBlock)
+  {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  resolve(self.convertRef(ref.child(path)))
+                 },
+                 rejecter: reject)
   }
   
   
-  @objc func push(databaseUrl: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    resolve(convertRef(getRefFromUrl(databaseUrl).childByAutoId()))
+  @objc func push(appName: String, databaseUrl: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  resolve(self.convertRef(ref.childByAutoId()))
+                 },
+                 rejecter: reject)
   }
   
   // We receive an array of a single element whh is the value to set
-  @objc func update(databaseUrl:String, value:Dictionary<String, AnyObject>, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    getRefFromUrl(databaseUrl).updateChildValues(value, withCompletionBlock: {(error, ref) in
-      if (error != nil) {
-        reject("set_value_failed", error?.localizedDescription, error)
-      } else {
-        resolve(nil)
-      }
-    })
+  @objc func update(appName: String, databaseUrl: String, value:Dictionary<String, AnyObject>, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  ref.updateChildValues(value, withCompletionBlock: {(error, ref) in
+                    if (error != nil) {
+                      reject("set_value_failed", error?.localizedDescription, error)
+                    } else {
+                      resolve(nil)
+                    }
+                  })
+                 },
+                 rejecter: reject)
   }
   
   // We receive an array of a single element which is the value to set
-  @objc func setValue(databaseUrl:String, value:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    // getRefFromUrl(databaseUrl).setValue(value[0])
-    getRefFromUrl(databaseUrl).setValue(value[0], withCompletionBlock: {(error, ref) in
-      if (error != nil) {
-        reject("set_value_failed", error?.localizedDescription, error)
-      } else {
-        resolve(nil)
-      }
-    })
+  @objc func setValue(appName: String, databaseUrl: String, value:[AnyObject],
+                      resolver resolve: RCTPromiseResolveBlock,
+                      rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  ref.setValue(value[0], withCompletionBlock: {(error, ref) in
+                    if (error != nil) {
+                      reject("set_value_failed", error?.localizedDescription, error)
+                    } else {
+                      resolve(nil)
+                    }
+                  })
+                 },
+                 rejecter: reject)
   }
   
-  @objc func setValueWithPriority(databaseUrl:String, value:[AnyObject], priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    getRefFromUrl(databaseUrl).setValue(value[0], andPriority: priority[0], withCompletionBlock: {(error, ref) in
-      if (error != nil) {
-        reject("set_value_failed", error?.localizedDescription, error)
-      } else {
-        resolve(nil)
-      }
-    })
+  @objc func setValueWithPriority(appName: String, databaseUrl: String, value:[AnyObject], priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  ref.setValue(value[0], andPriority: priority[0],
+                    withCompletionBlock: {(error, ref) in
+                      if (error != nil) {
+                        reject("set_value_failed", error?.localizedDescription, error)
+                      } else {
+                        resolve(nil)
+                      }
+                    })
+                 },
+                 rejecter: reject)
   }
   
   
-  @objc func setPriority(databaseUrl:String, priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    getRefFromUrl(databaseUrl).setPriority(priority[0], withCompletionBlock: {(error, ref) in
-      if (error != nil) {
-        reject("set_priority_failed", error?.localizedDescription, error)
-      } else {
-        resolve(nil)
-      }
-    })
+  @objc func setPriority(appName: String, databaseUrl: String, priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  ref.setPriority(priority[0], withCompletionBlock: {(error, ref) in
+                    if (error != nil) {
+                      reject("set_priority_failed", error?.localizedDescription, error)
+                    } else {
+                      resolve(nil)
+                    }
+                  })
+                 },
+                 rejecter: reject)
   }
   
-  @objc func removeValue(databaseUrl:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    getRefFromUrl(databaseUrl).removeValueWithCompletionBlock { (error, ref) in
-      if (error != nil) {
-        reject("remove_value_failed", error?.localizedDescription, error)
+  @objc func removeValue(appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  ref.removeValueWithCompletionBlock { (error, ref) in
+                    if (error != nil) {
+                      reject("remove_value_failed", error?.localizedDescription, error)
+                    } else {
+                      resolve(nil);
+                    }
+                  }
+                 },
+                 rejecter: reject)
+  }
+  
+  @objc func ref(appName: String, path: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    var ref:FIRDatabaseReference
+    if let app = FIRApp(named: appName) {
+      let database = FIRDatabase.database(app: app)
+      if let path = path where path != "" {
+        ref = database.referenceWithPath(path)
       } else {
-        resolve(nil);
+        ref = database.reference()
       }
+      resolve(convertRef(ref))
+    } else {
+      reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
+  }
+  
+  @objc func parent(appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  if let parent = ref.parent {
+                    resolve(self.convertRef(parent))
+                  } else {
+                    resolve(nil)
+                  }
+                 },
+                 rejecter: reject)
+  }
+  
+  @objc func root(appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    getRefRomUrl(appName, databaseUrl: databaseUrl,
+                 success: { (ref) -> Void in
+                  resolve(self.convertRef(ref.root))
+                 },
+                 rejecter: reject)
   }
   
   @objc func setPersistenceEnabled(enabled:Bool) {

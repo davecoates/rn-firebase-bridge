@@ -88,6 +88,7 @@ export type GithubAuthProvider = {
 };
 
 export type AuthModule = {
+    app: App;
     currentUser:?User;
     createUserWithEmail(email:string, password:string) : Promise<User>;
     signInWithEmail(email:string, password:string) : Promise<User>;
@@ -99,3 +100,25 @@ export type AuthModule = {
     GoogleAuthProvider: GoogleAuthProvider;
     getCurrentUser() : Promise<User>;
 };
+
+interface Auth {
+    app: App;
+    createUserWithEmailAndPassword(email:string, password:string) : Promise<User>;
+    currentUser:?User;
+    fetchProvidersForEmail(email:string) : Promise<Array<string>>;
+    sendPasswordResetEmail(email:string) : Promise<void>;
+    signInAnonymously() : Promise<User>;
+    signInWithEmail(email:string, password:string) : Promise<User>;
+    signInWithCredential(credential:AuthCredential|Promise<AuthCredential>) : Promise<User>;
+    signInWithCustomToken(token:string) : Promise<User>;
+    signOut() : Promise<void>;
+}
+
+export interface App {
+    name: string;
+    options: {};
+    auth(): Auth;
+    database(): Database;
+    delete(): Promise<void>;
+    //storage(): Storage;
+}

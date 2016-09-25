@@ -9,9 +9,13 @@ import type {
     DatabaseReferenceDescriptor,
     Query as QueryType,
     Priority,
+    App,
 } from './types';
 
 const NativeFirebaseBridgeDatabase = NativeModules.FirebaseBridgeDatabase;
+
+invariant(NativeFirebaseBridgeDatabase,
+         "Native bridge not found. This is likely because the native code hasn't been added to your project.")
 
 export class DataSnapshot {
 
@@ -118,10 +122,12 @@ export class DataSnapshot {
 
 export class Query {
 
+    app:App;
     parentPromise: Promise<DatabaseReferenceDescriptor>;
     query:Array<Array<any>>;
 
-    constructor(parentPromise:Promise<DatabaseReferenceDescriptor>, query:Array<Array<any>> = []) {
+    constructor(app:App, parentPromise:Promise<DatabaseReferenceDescriptor>, query:Array<Array<any>> = []) {
+        this.app = app;
         this.parentPromise = parentPromise;
         this.query = query;
     }
@@ -165,7 +171,7 @@ export class Query {
     on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise<void>)) : () => void {
         const p = this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(
-                locationUrl, eventType, this.query))
+                this.app.name, locationUrl, eventType, this.query))
             .then(uniqueEventName => {
                 // We receive a string back from the native module that is a unique
                 // event name just for this event registration. An event with this name
@@ -212,7 +218,7 @@ export class Query {
     once(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise<void>)) : () => void {
         const p = this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.once(
-                locationUrl, eventType, this.query))
+                this.app.name, locationUrl, eventType, this.query))
             .then(uniqueEventName => {
                 // We receive a string back from the native module that is a unique
                 // event name just for this event registration. An event with this name
@@ -281,32 +287,31 @@ export class Query {
 
 export class DatabaseReference extends Query {
 
-    constructor(parentPromise:?Promise<DatabaseReferenceDescriptor> = null) {
-        super((parentPromise || Promise.resolve({})));
-    }
-
     child(pathString:string) : DatabaseReferenceType {
         const promise = this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.child(locationUrl, pathString));
-        return new DatabaseReference(promise);
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.child(
+                this.app.name, locationUrl, pathString));
+        return new DatabaseReference(this.app, promise);
     }
 
     push() : DatabaseReferenceType {
         const promise = this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.push(locationUrl));
-        return new DatabaseReference(promise);
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.push(this.app.name, locationUrl));
+        return new DatabaseReference(this.app, promise);
     }
 
     setValue(value:any) : Promise<void> {
         // We wrap value in array for easier handling on Android.
         // See FirebridgeDatabase.java setValue()
         return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(locationUrl, [value]));
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValue(
+                this.app.name, locationUrl, [value]));
     }
 
     update(value:{ [key:string]: any }) : Promise<void> {
         return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.update(locationUrl, value));
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.update(
+                this.app.name, locationUrl, value));
     }
 
     setValueWithPriority(value:any, priority:Priority) : Promise<void> {
@@ -314,33 +319,69 @@ export class DatabaseReference extends Query {
         // See FirebridgeDatabase.java setValue()
         return this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.setValueWithPriority(
-                locationUrl, [value], [priority]));
+                this.app.name, locationUrl, [value], [priority]));
     }
 
     setPriority(priority:Priority) : Promise<void> {
         // We wrap priority in array for easier handling on Android.
         // See FirebridgeDatabase.java setPriority()
         return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setPriority(locationUrl, [priority])
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.setPriority(
+                this.app.name, locationUrl, [priority])
         );
     }
 
     remove() : Promise<void> {
         return this.parentPromise.then(
-            ({ locationUrl }) => NativeFirebaseBridgeDatabase.removeValue(locationUrl));
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.removeValue(
+                this.app.name, locationUrl));
     }
 
     key() : Promise<string> {
         return this.parentPromise.then(({ key }) => key);
     }
 
+    parent() : Promise<DatabaseReference> {
+        return new DatabaseReference(this.app, this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.parent(
+                this.app.name, locationUrl)));
+    }
+
+    root() : Promise<DatabaseReference> {
+        return new DatabaseReference(this.app, this.parentPromise.then(
+            ({ locationUrl }) => NativeFirebaseBridgeDatabase.parent(
+                this.app.name, locationUrl)));
+    }
+
 }
 
-export default {
-    ref() {
-        return new DatabaseReference();
-    },
-    setPersistenceEnabled(enabled:boolean) {
-        NativeFirebaseBridgeDatabase.setPersistenceEnabled(enabled);
-    },
-};
+class Database {
+
+    app: App;
+
+    constructor(app:App) {
+        this.app = app;
+    }
+
+    goOffline() {
+
+    }
+
+    goOnline() {
+
+    }
+
+    ref(path?:string) : DatabaseReference {
+        invariant(path == null || typeof path == 'string',
+            `If path is provided it must be a string, received ${typeof path}`
+        );
+        return new DatabaseReference(this.app, NativeFirebaseBridgeDatabase.ref(
+            this.app.name, path));
+    }
+
+    refFromURL(url) : DatabaseReference {
+    }
+
+}
+
+export default Database;
