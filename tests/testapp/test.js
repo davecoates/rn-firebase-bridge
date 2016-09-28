@@ -17,19 +17,25 @@ async function test(label, fn) {
         });
         promises.push(p);
     };
+    const formatLabel = label => label ? `${label}: ` : '';
+    const defaultMessage = (a, b, label = '') =>
+        `${formatLabel(label)}${prettyFormat(a)} != ${prettyFormat(b)}`;
     const t = {
-        truthy: buildComparator(a => !!a, a => `${a} is not truthy`),
-        falsy: buildComparator(a => !a, a => `${prettyFormat(a)} is not falsey`),
-        is: buildComparator(
-            (a, b) => a === b,
-            (a, b) => `${prettyFormat(a)} != ${prettyFormat(b)}`
+        truthy: buildComparator(a => !!a, (a, label) => `${formatLabel(label)}${a} is not truthy`),
+        falsy: buildComparator(
+            a => !a,
+            (a, label) => `${formatLabel(label)}${prettyFormat(a)} is not falsey`
         ),
-        deepEqual: buildComparator(isEqual, (a, b) => `${prettyFormat(a)} != ${prettyFormat(b)}`),
+        is: buildComparator((a, b) => a === b, defaultMessage),
+        deepEqual: buildComparator(isEqual, defaultMessage),
         async wait(desc, f, timeout = 2000) {
             promises.push(new Promise((resolve, reject) => {
                 f(resolve, reject);
                 setTimeout(() => reject(new Error(desc + ': Timeout')), timeout);
             }));
+        },
+        async delay(timeout = 500) {
+            return new Promise(resolve => setTimeout(resolve, timeout));
         },
     };
     try {

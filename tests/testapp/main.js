@@ -30,10 +30,10 @@ class testapp extends Component {
         }
         return (
             <View style={styles.container}>
-                <DatabaseTest app={this.defaultApp} />
-                <DatabaseTest app={this.otherApp} />
-                <AuthTest app={this.defaultApp} />
-                <AuthTest app={this.otherApp} />
+                    <DatabaseTest app={this.defaultApp} />
+                    <DatabaseTest app={this.otherApp} />
+                    {/*<AuthTest app={this.defaultApp} />*/}
+                    <AuthTest app={this.otherApp} />
             </View>
         );
     }

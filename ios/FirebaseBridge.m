@@ -141,7 +141,8 @@ RCT_EXTERN_METHOD(signInWithCredential:(NSString)credentialId
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(signOut:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(signOut:(NSString)appName
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(getCurrentUser:(RCTPromiseResolveBlock)resolve

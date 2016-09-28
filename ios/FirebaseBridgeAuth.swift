@@ -214,22 +214,26 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func signOut(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    do {
-      try FIRAuth.auth()?.signOut();
-      resolve(nil)
-    } catch let error as NSError {
-      var code = ""
-      if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
-        code = authErrorCodeToString(errorCode)
-      } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
-        code = userInfo["error_name"] as! String
+  @objc func signOut(appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let app = FIRApp(named: appName) {
+      do {
+        try FIRAuth(app:app)?.signOut();
+        resolve(nil)
+      } catch let error as NSError {
+        var code = ""
+        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
+          code = authErrorCodeToString(errorCode)
+        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
+          code = userInfo["error_name"] as! String
+        }
+        reject(code, error.localizedDescription, error);
       }
-      reject(code, error.localizedDescription, error);
+    } else {
+      reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   
-  @objc func getCurrentUser(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func getCurrentUser(appName:String, resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     if let user = FIRAuth.auth()?.currentUser {
       resolve(userToDict(user))
     } else {

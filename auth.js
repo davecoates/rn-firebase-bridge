@@ -9,7 +9,7 @@ authEmitter.addListener(
   ({ user, app }:{|user: ?User, app: String|}) => {
       authInstances.forEach(auth => {
           if (auth.app.name === app) {
-              auth._authStateChanged(user);
+              auth._authStateChanged(user ? user : null);
           }
       })
   }
@@ -74,7 +74,7 @@ export default class Auth {
     }
 
     signOut() : Promise<void> {
-
+        return NativeFirebaseBridgeAuth.signOut(this.app.name);
     }
 
 }

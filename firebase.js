@@ -22,6 +22,8 @@ class App {
     name: String;
     options: {};
 
+    _auth: Auth;
+
     constructor(data) {
         this.name = data.name;
         this.options = data.options;
@@ -32,7 +34,10 @@ class App {
     }
 
     auth() {
-        return new Auth(this);
+        if (!this._auth) {
+            this._auth = new Auth(this);
+        }
+        return this._auth;
     }
 }
 
