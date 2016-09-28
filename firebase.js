@@ -3,6 +3,7 @@ import { NativeModules } from 'react-native';
 import invariant from 'invariant';
 import type * as types from './types';
 import Database from './database';
+import Auth from './auth';
 // See
 // https://firebase.google.com/docs/reference/js/firebase
 
@@ -28,6 +29,10 @@ class App {
 
     database() {
         return new Database(this);
+    }
+
+    auth() {
+        return new Auth(this);
     }
 }
 
@@ -58,6 +63,9 @@ database.enableLogging = enabled => {
 export default {
     apps,
     database,
+    auth() {
+        return new Auth();
+    },
     SDK_VERSION,
     initializeApp,
     initializeDefaultApp,

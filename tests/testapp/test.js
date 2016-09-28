@@ -1,21 +1,30 @@
+import prettyFormat from 'pretty-format';
+import isEqual from 'lodash.isequal';
+
 async function test(label, fn) {
     const errors = [];
     let passed = 0;
     const promises = [];
+    const buildComparator = (eq, message) => async (...params) => {
+        const p = new Promise(async resolve => {
+            const resolveParams = await Promise.all(params);
+            if (!eq(...resolveParams)) {
+                errors.push(message(...resolveParams));
+            } else {
+                passed++;
+            }
+            resolve();
+        });
+        promises.push(p);
+    };
     const t = {
-        async is(value, expected) {
-            const p = new Promise(async resolve => {
-                const a = await value;
-                const b = await expected;
-                if (a !== b) {
-                    errors.push(`${a} != ${b}`);
-                } else {
-                    passed++;
-                }
-                resolve();
-            });
-            promises.push(p);
-        },
+        truthy: buildComparator(a => !!a, a => `${a} is not truthy`),
+        falsy: buildComparator(a => !a, a => `${prettyFormat(a)} is not falsey`),
+        is: buildComparator(
+            (a, b) => a === b,
+            (a, b) => `${prettyFormat(a)} != ${prettyFormat(b)}`
+        ),
+        deepEqual: buildComparator(isEqual, (a, b) => `${prettyFormat(a)} != ${prettyFormat(b)}`),
         async wait(desc, f, timeout = 2000) {
             promises.push(new Promise((resolve, reject) => {
                 f(resolve, reject);

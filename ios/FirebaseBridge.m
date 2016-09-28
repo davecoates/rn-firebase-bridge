@@ -119,6 +119,10 @@ RCT_EXTERN_METHOD(setPersistenceEnabled:(BOOL)enabled)
 
 @interface RCT_EXTERN_MODULE(FirebaseBridgeAuth, RCTEventEmitter)
 
+RCT_EXTERN_METHOD(addAuthStateDidChangeListener:(NSString)appName
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(createUserWithEmail:(NSString)email
                   password:NSString
                   resolver:(RCTPromiseResolveBlock)resolve
@@ -129,7 +133,8 @@ RCT_EXTERN_METHOD(signInWithEmail:(NSString)email
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(signInAnonymously:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(signInAnonymously:(NSString)appName
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(signInWithCredential:(NSString)credentialId

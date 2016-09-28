@@ -35,7 +35,7 @@ export default class TestSuite extends Component {
         results.forEach(({ label, errors, passed }) => {
             if (errors.length) {
                 console.group(`${label} (${passed} passed, ${errors.length} failed)`);
-                errors.map(console.log.bind(console));
+                errors.map(error => console.log(error));
                 console.groupEnd();
             }
         });

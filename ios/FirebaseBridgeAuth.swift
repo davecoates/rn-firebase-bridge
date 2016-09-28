@@ -92,15 +92,17 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
   
   override init() {
     super.init()
-    addAuthStateDidChangeListener()
   }
+  
   
   override func supportedEvents() -> [String]! {
     return ["authStateDidChange"]
   }
   
+  var authStateDidChangeListenerHandles = Dictionary<String, FIRAuthStateDidChangeListenerHandle>();
+  
   var authStateDidChangeListenerHandle:FIRAuthStateDidChangeListenerHandle?;
-  @objc func addAuthStateDidChangeListener() {
+  @objc func addAuthStateDidChangeListenerOLD() {
     self.authStateDidChangeListenerHandle = FIRAuth.auth()?.addAuthStateDidChangeListener({ (auth:FIRAuth, user) in
       if (user == nil) {
         self.sendEventWithName("authStateDidChange", body: nil)
@@ -110,7 +112,30 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     })
   }
   
-  @objc func createUserWithEmail(email:String, password:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func addAuthStateDidChangeListener(appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let app = FIRApp(named: appName) {
+      resolve(nil)
+      let handle = FIRAuth(app:app)?.addAuthStateDidChangeListener({ (auth:FIRAuth, user) in
+        var userDict:Dictionary<String, AnyObject>? = nil
+        if let user = user {
+          userDict = userToDict(user)
+        }
+        let body:Dictionary<String, AnyObject> = [
+          "app": appName,
+          "user": userDict ?? false
+        ]
+        self.sendEventWithName("authStateDidChange", body: body)
+      })
+      authStateDidChangeListenerHandles[appName] = handle;
+    } else {
+      reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }
+  }
+  
+  @objc func createUserWithEmail(appName: String, email:String, password:String,
+                                 resolver resolve: RCTPromiseResolveBlock,
+                                 rejecter reject: RCTPromiseRejectBlock)
+  {
     FIRAuth.auth()?.createUserWithEmail(email, password: password) { (user, error) in
       if let error = error {
         var code = ""
@@ -144,20 +169,25 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func signInAnonymously(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    FIRAuth.auth()?.signInAnonymouslyWithCompletion() { (user, error) in
-      if let error = error {
-        var code = ""
-        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
-          code = authErrorCodeToString(errorCode)
-        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
-          code = userInfo["error_name"] as! String
+  @objc func signInAnonymously(appName:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    
+    if let app = FIRApp(named: appName) {
+      FIRAuth(app:app)?.signInAnonymouslyWithCompletion() { (user, error) in
+        if let error = error {
+          var code = ""
+          if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
+            code = authErrorCodeToString(errorCode)
+          } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
+            code = userInfo["error_name"] as! String
+          }
+          reject(code, error.localizedDescription, error);
+          return;
         }
-        reject(code, error.localizedDescription, error);
-        return;
+        
+        resolve(userToDict(user!));
       }
-      
-      resolve(userToDict(user!));
+    } else {
+      reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   

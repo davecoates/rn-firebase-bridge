@@ -7,6 +7,7 @@ import {
 } from 'react-native';
 import firebase from '../../firebase';
 import DatabaseTest from './DatabaseTest';
+import AuthTest from './AuthTest';
 
 class testapp extends Component {
     state = { ready: false };
@@ -27,11 +28,12 @@ class testapp extends Component {
         if (!this.state.ready) {
             return <View><Text>Initializing...</Text></View>;
         }
-        console.log(this.defaultApp, this.otherApp)
         return (
             <View style={styles.container}>
                 <DatabaseTest app={this.defaultApp} />
                 <DatabaseTest app={this.otherApp} />
+                <AuthTest app={this.defaultApp} />
+                <AuthTest app={this.otherApp} />
             </View>
         );
     }
