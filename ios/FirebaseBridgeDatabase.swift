@@ -109,11 +109,6 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
   
   var databaseEventHandles = Dictionary<String, (FIRDatabaseQuery, FIRDatabaseHandle)>();
   
-  enum FirebaseBridgeError: ErrorType {
-    case UnknownQueryFunction(fnName: String)
-    case AppNotFound(appName: String)
-  }
-  
   @objc func onRef(appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]]) throws -> FIRDatabaseQuery {
     var ref:FIRDatabaseQuery = try getRefFromUrl(appName, databaseUrl: databaseUrl)
     for queryDescriptor in query {

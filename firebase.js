@@ -14,7 +14,7 @@ invariant(
     "added the 'ios' directory from rn-firebase-bridge to 'Libraries' in Xcode"
 );
 
-const SDK_VERSION = 'um';
+const SDK_VERSION = '???';
 const appsByName = {}
 const apps = [];
 
@@ -65,12 +65,18 @@ database.enableLogging = enabled => {
     console.error("Not implemented");
 }
 
+function auth() {
+    return new Auth();
+}
+auth.FacebookAuthProvider = Auth.FacebookAuthProvider;
+auth.GoogleAuthProvider = Auth.GoogleAuthProvider;
+auth.GithubAuthProvider = Auth.GithubAuthProvider;
+auth.TwitterAuthProvider = Auth.TwitterAuthProvider;
+
 export default {
     apps,
     database,
-    auth() {
-        return new Auth();
-    },
+    auth,
     SDK_VERSION,
     initializeApp,
     initializeDefaultApp,

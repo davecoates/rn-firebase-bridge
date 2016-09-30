@@ -24,6 +24,7 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		140ED2AC1D01E1AD002B40FF /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
 		146834051AC3E58100842450 /* libReact.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 146834041AC3E56700842450 /* libReact.a */; };
+		1E8706D84E124D6FB075176E /* StoreKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = EC5B6CFF95464273AA442A42 /* StoreKit.framework */; };
 		1F52979805F044C587CD6703 /* Octicons.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F86F79E0C85A417EA7E00260 /* Octicons.ttf */; };
 		21EBCCD714E3406482C27B42 /* Arial.ttf in Resources */ = {isa = PBXBuildFile; fileRef = C82DFA0C50CF49569DA976CF /* Arial.ttf */; };
 		2E458339E0D5DCC3227A8E45 /* Pods_testapp.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5FB22607B9B0427FADF7612C /* Pods_testapp.framework */; };
@@ -33,16 +34,18 @@
 		472E5D1BA0584475B3F502C5 /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D7BE14F9D0D94EE18CBFBBED /* libRNVectorIcons.a */; };
 		4855AC1E0F8E425F97C762A7 /* Microsoft Sans Serif.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E1C5B7E016548F7BF85E6C1 /* Microsoft Sans Serif.ttf */; };
 		4A208197A6A042E884F64B64 /* Skia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 351486AAA4A94EFCB60141E8 /* Skia.ttf */; };
+		4EAF3062C45745A7B4ADB742 /* libOAuthManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2672A2AB0483458CBCCCF67B /* libOAuthManager.a */; };
+		553503451D9E170C007B8573 /* FirebaseBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553503441D9E170C007B8573 /* FirebaseBridgeError.swift */; };
 		55B105E21D96497100A244B4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55B105E11D96497100A244B4 /* GoogleService-Info.plist */; };
 		55C906CD1D97DE22003B2212 /* FirebaseBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C41D97DE22003B2212 /* FirebaseBridge.m */; };
 		55C906CE1D97DE22003B2212 /* FirebaseBridgeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C51D97DE22003B2212 /* FirebaseBridgeApp.swift */; };
-		55C906CF1D97DE22003B2212 /* FirebaseBridgeAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C61D97DE22003B2212 /* FirebaseBridgeAuth.swift */; };
 		55C906D01D97DE22003B2212 /* FirebaseBridgeCredentialCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C71D97DE22003B2212 /* FirebaseBridgeCredentialCache.swift */; };
 		55C906D11D97DE22003B2212 /* FirebaseBridgeDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C81D97DE22003B2212 /* FirebaseBridgeDatabase.swift */; };
 		55C906D21D97DE22003B2212 /* FirebaseBridgeFacebookAuthProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C91D97DE22003B2212 /* FirebaseBridgeFacebookAuthProvider.swift */; };
 		55C906D31D97DE22003B2212 /* FirebaseBridgeGithubAuthProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906CA1D97DE22003B2212 /* FirebaseBridgeGithubAuthProvider.swift */; };
 		55C906D41D97DE22003B2212 /* FirebaseBridgeGoogleAuthProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906CB1D97DE22003B2212 /* FirebaseBridgeGoogleAuthProvider.swift */; };
 		55C906D51D97DE22003B2212 /* FirebaseBridgeTwitterAuthProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906CC1D97DE22003B2212 /* FirebaseBridgeTwitterAuthProvider.swift */; };
+		55CB7CDD1D9E32C30058927F /* FirebaseBridgeAuth.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C61D97DE22003B2212 /* FirebaseBridgeAuth.swift */; };
 		5EA0B81DD4CD4A078585AE7E /* Entypo.ttf in Resources */ = {isa = PBXBuildFile; fileRef = DA8E218D2A064B8B9E41299B /* Entypo.ttf */; };
 		7198C96394A246F2B18C892A /* Arial Black.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4E3595FA00824C7EBCA92C01 /* Arial Black.ttf */; };
 		72E812CAB58B4A5FA07B48D9 /* Comic Sans MS.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 87A677AE14434B508ADA9896 /* Comic Sans MS.ttf */; };
@@ -121,6 +124,13 @@
 			remoteGlobalIDString = 83CBBA2E1A601D0E00E9B192;
 			remoteInfo = React;
 		};
+		55CB7CED1D9E43850058927F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 134814201AA4EA6300B7C361;
+			remoteInfo = OAuthManager;
+		};
 		55CDA0F81D9785AC00584534 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 13C738B66C594169A5E015C4 /* RNVectorIcons.xcodeproj */;
@@ -170,12 +180,14 @@
 		17DC8D573AF148A99E079897 /* SF-UI-Text-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-UI-Text-Regular.otf"; path = "../node_modules/native-base/Fonts/SF-UI-Text-Regular.otf"; sourceTree = "<group>"; };
 		1BC5025BE49B440181C50F37 /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		20735FB5335F4C5BBCC67345 /* Times New Roman.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Times New Roman.ttf"; path = "../node_modules/native-base/Fonts/Times New Roman.ttf"; sourceTree = "<group>"; };
+		2672A2AB0483458CBCCCF67B /* libOAuthManager.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libOAuthManager.a; sourceTree = "<group>"; };
 		2A315B25D6BEF01BF48866C7 /* Pods-testapp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-testapp.release.xcconfig"; path = "Pods/Target Support Files/Pods-testapp/Pods-testapp.release.xcconfig"; sourceTree = "<group>"; };
 		351486AAA4A94EFCB60141E8 /* Skia.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Skia.ttf; path = "../node_modules/native-base/Fonts/Skia.ttf"; sourceTree = "<group>"; };
 		3E1C5B7E016548F7BF85E6C1 /* Microsoft Sans Serif.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Microsoft Sans Serif.ttf"; path = "../node_modules/native-base/Fonts/Microsoft Sans Serif.ttf"; sourceTree = "<group>"; };
 		45BE68F6F4914E09B7365838 /* Roboto_medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Roboto_medium.ttf; path = "../node_modules/native-base/Fonts/Roboto_medium.ttf"; sourceTree = "<group>"; };
 		4E3595FA00824C7EBCA92C01 /* Arial Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Arial Black.ttf"; path = "../node_modules/native-base/Fonts/Arial Black.ttf"; sourceTree = "<group>"; };
 		4FA4B14CB020491AADCE1B4C /* Andale Mono.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Andale Mono.ttf"; path = "../node_modules/native-base/Fonts/Andale Mono.ttf"; sourceTree = "<group>"; };
+		553503441D9E170C007B8573 /* FirebaseBridgeError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FirebaseBridgeError.swift; path = ../../../../ios/FirebaseBridgeError.swift; sourceTree = "<group>"; };
 		55B105E01D9647B000A244B4 /* testapp-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "testapp-Bridging-Header.h"; sourceTree = "<group>"; };
 		55B105E11D96497100A244B4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		55C906C31D97DE22003B2212 /* FirebaseBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirebaseBridge.h; sourceTree = "<group>"; };
@@ -191,6 +203,7 @@
 		5733DDCAF433482E9EF3A6A7 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		5FB22607B9B0427FADF7612C /* Pods_testapp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_testapp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
+		7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = OAuthManager.xcodeproj; path = "../node_modules/react-native-oauth/ios/OAuthManager.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
 		87A677AE14434B508ADA9896 /* Comic Sans MS.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Comic Sans MS.ttf"; path = "../node_modules/native-base/Fonts/Comic Sans MS.ttf"; sourceTree = "<group>"; };
 		8D18CF60230B4E848E81C164 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
@@ -201,6 +214,7 @@
 		C82DFA0C50CF49569DA976CF /* Arial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Arial.ttf; path = "../node_modules/native-base/Fonts/Arial.ttf"; sourceTree = "<group>"; };
 		D7BE14F9D0D94EE18CBFBBED /* libRNVectorIcons.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libRNVectorIcons.a; sourceTree = "<group>"; };
 		DA8E218D2A064B8B9E41299B /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
+		EC5B6CFF95464273AA442A42 /* StoreKit.framework */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = wrapper.framework; name = StoreKit.framework; path = System/Library/Frameworks/StoreKit.framework; sourceTree = SDKROOT; };
 		F102A63C1B854E3B82040E28 /* MaterialIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = MaterialIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/MaterialIcons.ttf"; sourceTree = "<group>"; };
 		F86F79E0C85A417EA7E00260 /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -230,6 +244,8 @@
 				139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */,
 				2E458339E0D5DCC3227A8E45 /* Pods_testapp.framework in Frameworks */,
 				472E5D1BA0584475B3F502C5 /* libRNVectorIcons.a in Frameworks */,
+				4EAF3062C45745A7B4ADB742 /* libOAuthManager.a in Frameworks */,
+				1E8706D84E124D6FB075176E /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -337,6 +353,7 @@
 			isa = PBXGroup;
 			children = (
 				5FB22607B9B0427FADF7612C /* Pods_testapp.framework */,
+				EC5B6CFF95464273AA442A42 /* StoreKit.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -354,8 +371,17 @@
 				55C906CA1D97DE22003B2212 /* FirebaseBridgeGithubAuthProvider.swift */,
 				55C906CB1D97DE22003B2212 /* FirebaseBridgeGoogleAuthProvider.swift */,
 				55C906CC1D97DE22003B2212 /* FirebaseBridgeTwitterAuthProvider.swift */,
+				553503441D9E170C007B8573 /* FirebaseBridgeError.swift */,
 			);
 			path = ios;
+			sourceTree = "<group>";
+		};
+		55CB7CEA1D9E43850058927F /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				55CB7CEE1D9E43850058927F /* libOAuthManager.a */,
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 		55CDA0EB1D9785AC00584534 /* Products */ = {
@@ -416,6 +442,7 @@
 				00C302DF1ABCB9EE00DB3ED1 /* RCTVibration.xcodeproj */,
 				139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */,
 				13C738B66C594169A5E015C4 /* RNVectorIcons.xcodeproj */,
+				7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -509,7 +536,7 @@
 		83CBB9F71A601CBA00E9B192 /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
-				LastSwiftUpdateCheck = 0730;
+				LastSwiftUpdateCheck = 730;
 				LastUpgradeCheck = 610;
 				ORGANIZATIONNAME = Facebook;
 				TargetAttributes = {
@@ -531,6 +558,10 @@
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
+				{
+					ProductGroup = 55CB7CEA1D9E43850058927F /* Products */;
+					ProjectRef = 7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */;
+				},
 				{
 					ProductGroup = 00C302A81ABCB8CE00DB3ED1 /* Products */;
 					ProjectRef = 00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */;
@@ -639,6 +670,13 @@
 			fileType = archive.ar;
 			path = libReact.a;
 			remoteRef = 146834031AC3E56700842450 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		55CB7CEE1D9E43850058927F /* libOAuthManager.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libOAuthManager.a;
+			remoteRef = 55CB7CED1D9E43850058927F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		55CDA0F91D9785AC00584534 /* libRNVectorIcons.a */ = {
@@ -783,11 +821,12 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				55C906CE1D97DE22003B2212 /* FirebaseBridgeApp.swift in Sources */,
 				55C906D51D97DE22003B2212 /* FirebaseBridgeTwitterAuthProvider.swift in Sources */,
+				553503451D9E170C007B8573 /* FirebaseBridgeError.swift in Sources */,
 				55C906D31D97DE22003B2212 /* FirebaseBridgeGithubAuthProvider.swift in Sources */,
 				55C906CD1D97DE22003B2212 /* FirebaseBridge.m in Sources */,
+				55CB7CDD1D9E32C30058927F /* FirebaseBridgeAuth.swift in Sources */,
 				55C906D41D97DE22003B2212 /* FirebaseBridgeGoogleAuthProvider.swift in Sources */,
 				55C906D11D97DE22003B2212 /* FirebaseBridgeDatabase.swift in Sources */,
-				55C906CF1D97DE22003B2212 /* FirebaseBridgeAuth.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				55C906D01D97DE22003B2212 /* FirebaseBridgeCredentialCache.swift in Sources */,
 			);
@@ -830,6 +869,7 @@
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/testapp.app/testapp";
@@ -846,6 +886,7 @@
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks @loader_path/Frameworks";
 				LIBRARY_SEARCH_PATHS = (
 					"$(inherited)",
+					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 					"\"$(SRCROOT)/$(TARGET_NAME)\"",
 				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -866,6 +907,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../node_modules/react-native/React/**",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-oauth/ios/**",
 				);
 				INFOPLIST_FILE = testapp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -893,6 +935,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../node_modules/react-native/React/**",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-oauth/ios/**",
 				);
 				INFOPLIST_FILE = testapp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
@@ -948,6 +991,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../node_modules/react-native/React/**",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-oauth/ios/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
@@ -990,6 +1034,7 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../node_modules/react-native/React/**",
 					"$(SRCROOT)/../node_modules/react-native-vector-icons/RNVectorIconsManager",
+					"$(SRCROOT)/../node_modules/react-native-oauth/ios/**",
 				);
 				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;

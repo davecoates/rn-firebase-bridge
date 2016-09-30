@@ -85,8 +85,12 @@ func authErrorCodeToString(code:FIRAuthErrorCode) -> String {
 class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
   
   func invalidate() {
-    if let handle = self.authStateDidChangeListenerHandle {
-      FIRAuth.auth()?.removeAuthStateDidChangeListener(handle)
+    self.authStateDidChangeListenerHandles.forEach { (appName, handle) in
+      do {
+        try self.getAuthInstance(appName)?.removeAuthStateDidChangeListener(handle)
+      } catch let unknownError {
+        print("Failed to cleanup auth listeners for \(appName)", unknownError)
+      }
     }
   }
   
@@ -94,28 +98,34 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     super.init()
   }
   
-  
   override func supportedEvents() -> [String]! {
     return ["authStateDidChange"]
   }
   
-  var authStateDidChangeListenerHandles = Dictionary<String, FIRAuthStateDidChangeListenerHandle>();
-  
-  var authStateDidChangeListenerHandle:FIRAuthStateDidChangeListenerHandle?;
-  @objc func addAuthStateDidChangeListenerOLD() {
-    self.authStateDidChangeListenerHandle = FIRAuth.auth()?.addAuthStateDidChangeListener({ (auth:FIRAuth, user) in
-      if (user == nil) {
-        self.sendEventWithName("authStateDidChange", body: nil)
-      } else {
-        self.sendEventWithName("authStateDidChange", body: userToDict(user!))
-      }
-    })
+  func getAuthInstance(appName:String) throws -> FIRAuth? {
+     if let app = FIRApp(named: appName) {
+      return FIRAuth(app:app)
+    }
+    throw FirebaseBridgeError.AppNotFound(appName: appName)
   }
   
+  private func reject(reject: RCTPromiseRejectBlock, error: NSError) {
+    var code = ""
+    if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
+      code = authErrorCodeToString(errorCode)
+    } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
+      code = userInfo["error_name"] as! String
+    }
+    reject(code, error.localizedDescription,  NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+  }
+  
+  
+  var authStateDidChangeListenerHandles = Dictionary<String, FIRAuthStateDidChangeListenerHandle>();
+  
   @objc func addAuthStateDidChangeListener(appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let app = FIRApp(named: appName) {
-      resolve(nil)
-      let handle = FIRAuth(app:app)?.addAuthStateDidChangeListener({ (auth:FIRAuth, user) in
+    do {
+      let auth = try self.getAuthInstance(appName)
+      let handle = auth?.addAuthStateDidChangeListener({ (auth:FIRAuth, user) in
         var userDict:Dictionary<String, AnyObject>? = nil
         if let user = user {
           userDict = userToDict(user)
@@ -126,9 +136,14 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
         ]
         self.sendEventWithName("authStateDidChange", body: body)
       })
+      resolve(nil)
       authStateDidChangeListenerHandles[appName] = handle;
-    } else {
-      reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    } catch let error as FirebaseBridgeError {
+      reject(error.code, error.description, nil)
+      return
+    } catch let unknownError as NSError {
+      reject("unknown_error", unknownError.localizedDescription, unknownError)
+      return
     }
   }
   
@@ -136,111 +151,149 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
                                  resolver resolve: RCTPromiseResolveBlock,
                                  rejecter reject: RCTPromiseRejectBlock)
   {
-    FIRAuth.auth()?.createUserWithEmail(email, password: password) { (user, error) in
-      if let error = error {
-        var code = ""
-        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
-          code = authErrorCodeToString(errorCode)
-        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
-          code = userInfo["error_name"] as! String
+    do {
+      try self.getAuthInstance(appName)?.createUserWithEmail(email, password: password) { (user, error) in
+        if let error = error {
+          self.reject(reject, error: error)
+          return;
         }
-        reject(code, error.localizedDescription, error);
-        return;
+        
+        resolve(userToDict(user!));
       }
-      
-      resolve(userToDict(user!));
+    } catch let error as FirebaseBridgeError {
+      reject(error.code, error.description, nil)
+      return
+    } catch let unknownError as NSError {
+      reject("unknown_error", unknownError.localizedDescription, unknownError)
+      return
     }
   }
   
-  @objc func signInWithEmail(email:String, password:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    FIRAuth.auth()?.signInWithEmail(email, password: password) { (user, error) in
-      if let error = error {
-        var code = ""
-        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
-          code = authErrorCodeToString(errorCode)
-        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
-          code = userInfo["error_name"] as! String
+  @objc func signInWithEmail(appName: String, email:String, password:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    do {
+      try self.getAuthInstance(appName)?.signInWithEmail(email, password: password) { (user, error) in
+        if let error = error {
+          self.reject(reject, error: error)
+          return;
         }
-        reject(code, error.localizedDescription, error);
-        return;
+        
+        resolve(userToDict(user!));
       }
-      
-      resolve(userToDict(user!));
+    } catch let error as FirebaseBridgeError {
+      reject(error.code, error.description, nil)
+      return
+    } catch let unknownError as NSError {
+      reject("unknown_error", unknownError.localizedDescription, unknownError)
+      return
     }
   }
   
   @objc func signInAnonymously(appName:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    
-    if let app = FIRApp(named: appName) {
-      FIRAuth(app:app)?.signInAnonymouslyWithCompletion() { (user, error) in
+    do {
+      try self.getAuthInstance(appName)?.signInAnonymouslyWithCompletion() { (user, error) in
         if let error = error {
-          var code = ""
-          if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
-            code = authErrorCodeToString(errorCode)
-          } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
-            code = userInfo["error_name"] as! String
-          }
-          reject(code, error.localizedDescription, error);
+          self.reject(reject, error: error)
           return;
         }
-        
         resolve(userToDict(user!));
       }
-    } else {
-      reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    } catch let error as FirebaseBridgeError {
+      reject(error.code, error.description, nil)
+      return
+    } catch let unknownError as NSError {
+      reject("unknown_error", unknownError.localizedDescription, unknownError)
+      return
     }
   }
   
-  @objc func signInWithCredential(credentialId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func signInWithCredential(appName:String, credentialId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     if let credential = FirebaseBridgeCredentialCache.getCredential(credentialId) {
-      
-      FIRAuth.auth()?.signInWithCredential(credential, completion: { (user, error) in
-        if let error = error {
-          var code = ""
-          if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
-            code = authErrorCodeToString(errorCode)
-          } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
-            code = userInfo["error_name"] as! String
+      do {
+        try self.getAuthInstance(appName)?.signInWithCredential(credential, completion: { (user, error) in
+          if let error = error {
+            self.reject(reject, error: error)
+            return;
           }
-          reject(code, error.localizedDescription, error);
-          return;
-        }
-        
-        resolve(userToDict(user!));
+          resolve(userToDict(user!));
+        })
+      } catch let error as FirebaseBridgeError {
+        reject(error.code, error.description, nil)
+        return
+      } catch let unknownError as NSError {
+        reject("unknown_error", unknownError.localizedDescription, unknownError)
+        return
       }
-      )
     } else {
       reject("auth/credential-not-found", "Credential not found", NSError(domain: "FirebaseBridgeAuth", code: 0, userInfo: nil));
     }
   }
   
   @objc func signOut(appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let app = FIRApp(named: appName) {
-      do {
-        try FIRAuth(app:app)?.signOut();
-        resolve(nil)
-      } catch let error as NSError {
-        var code = ""
-        if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
-          code = authErrorCodeToString(errorCode)
-        } else if let userInfo = error.userInfo as? Dictionary<String, AnyObject> {
-          code = userInfo["error_name"] as! String
-        }
-        reject(code, error.localizedDescription, error);
-      }
-    } else {
-      reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
-    }
-  }
-  
-  @objc func getCurrentUser(appName:String, resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let user = FIRAuth.auth()?.currentUser {
-      resolve(userToDict(user))
-    } else {
+    do {
+      try self.getAuthInstance(appName)?.signOut();
       resolve(nil)
+    } catch let error as FirebaseBridgeError {
+      reject(error.code, error.description, nil)
+      return
+    } catch let unknownError as NSError {
+      reject("unknown_error", unknownError.localizedDescription, unknownError)
+      return
     }
   }
-  
-  
+    
+  @objc func sendPasswordResetEmail(appName: String, email: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    do {
+        try self.getAuthInstance(appName)?.sendPasswordResetWithEmail(email, completion: { (error) in
+            if let error = error {
+                self.reject(reject, error: error)
+            } else {
+                resolve(nil)
+            }
+        })
+    } catch let error as FirebaseBridgeError {
+        reject(error.code, error.description, nil)
+        return
+    } catch let unknownError as NSError {
+        reject("unknown_error", unknownError.localizedDescription, unknownError)
+        return
+    }
+  }
+    
+  @objc func fetchProvidersForEmail(appName: String, email: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    do {
+        try self.getAuthInstance(appName)?.fetchProvidersForEmail(email, completion: { (providers, error) in
+            if let error = error {
+                self.reject(reject, error: error)
+            } else {
+                resolve(providers)
+            }
+        })
+    } catch let error as FirebaseBridgeError {
+        reject(error.code, error.description, nil)
+        return
+    } catch let unknownError as NSError {
+        reject("unknown_error", unknownError.localizedDescription, unknownError)
+        return
+    }
+  }
+    
+  @objc func signInWithCustomToken(appName: String, token: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    do {
+        try self.getAuthInstance(appName)?.signInWithCustomToken(token, completion: { (user, error) in
+            if let error = error {
+                self.reject(reject, error: error)
+                return;
+            }
+            resolve(userToDict(user!));
+        })
+    } catch let error as FirebaseBridgeError {
+        reject(error.code, error.description, nil)
+        return
+    } catch let unknownError as NSError {
+        reject("unknown_error", unknownError.localizedDescription, unknownError)
+        return
+    }
+  }
+    
 }
 

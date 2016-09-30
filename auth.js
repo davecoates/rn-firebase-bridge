@@ -1,5 +1,5 @@
 import { NativeModules, NativeEventEmitter } from 'react-native';
-import type { App, User } from './types';
+import type { User, AuthCredential, App } from './types';
 
 const NativeFirebaseBridgeAuth = NativeModules.FirebaseBridgeAuth;
 const authEmitter = new NativeEventEmitter(NativeFirebaseBridgeAuth);
@@ -46,15 +46,15 @@ export default class Auth {
     }
 
     createUserWithEmailAndPassword(email:string, password:string) : Promise<User> {
-
+        return NativeFirebaseBridgeAuth.createUserWithEmail(this.app.name, email, password);
     }
 
     fetchProvidersForEmail(email:string) : Promise<Array<string>> {
-
+        return NativeFirebaseBridgeAuth.fetchProvidersForEmail(this.app.name, email);
     }
 
     sendPasswordResetEmail(email:string) : Promise<void> {
-
+        return NativeFirebaseBridgeAuth.sendPasswordResetEmail(this.app.name, email);
     }
 
     signInAnonymously() : Promise<User> {
@@ -62,15 +62,15 @@ export default class Auth {
     }
 
     signInWithEmail(email:string, password:string) : Promise<User> {
-
+        return NativeFirebaseBridgeAuth.signInWithEmail(this.app.name, email, password);
     }
 
-    signInWithCredential(credential:AuthCredential|Promise<AuthCredential>) : Promise<User> {
-
+    async signInWithCredential(credential:AuthCredential|Promise<AuthCredential>) : Promise<User> {
+        return NativeFirebaseBridgeAuth.signInWithCredential(this.app.name, (await credential).id);
     }
 
     signInWithCustomToken(token:string) : Promise<User> {
-
+        return NativeFirebaseBridgeAuth.signInWithCustomToken(this.app.name, token);
     }
 
     signOut() : Promise<void> {
@@ -78,3 +78,34 @@ export default class Auth {
     }
 
 }
+
+const {
+    FirebaseBridgeFacebookAuthProvider,
+    FirebaseBridgeTwitterAuthProvider,
+    FirebaseBridgeGoogleAuthProvider,
+    FirebaseBridgeGithubAuthProvider,
+} = NativeModules;
+
+Auth.FacebookAuthProvider = {
+    credential(token:string) : Promise<AuthCredential> {
+        return FirebaseBridgeFacebookAuthProvider.credential(token);
+    },
+};
+
+Auth.TwitterAuthProvider = {
+    credential(token:string, secret:string) : Promise<AuthCredential> {
+        return FirebaseBridgeTwitterAuthProvider.credential(token, secret);
+    },
+};
+
+Auth.GoogleAuthProvider = {
+    credential(idToken:string, accessToken:string) : Promise<AuthCredential> {
+        return FirebaseBridgeGoogleAuthProvider.credential(idToken, accessToken);
+    },
+};
+
+Auth.GithubAuthProvider = {
+    credential(token:string) : Promise<AuthCredential> {
+        return FirebaseBridgeGithubAuthProvider.credential(token);
+    },
+};

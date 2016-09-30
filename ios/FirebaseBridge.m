@@ -123,12 +123,14 @@ RCT_EXTERN_METHOD(addAuthStateDidChangeListener:(NSString)appName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(createUserWithEmail:(NSString)email
+RCT_EXTERN_METHOD(createUserWithEmail:(NSString)appName
+                  email:NSString
                   password:NSString
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(signInWithEmail:(NSString)email
+RCT_EXTERN_METHOD(signInWithEmail:(NSString)appName
+                  email:NSString
                   password:NSString
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
@@ -137,7 +139,13 @@ RCT_EXTERN_METHOD(signInAnonymously:(NSString)appName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(signInWithCredential:(NSString)credentialId
+RCT_EXTERN_METHOD(signInWithCredential:(NSString)appName
+                  credentialId:NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(signInWithCustomToken:(NSString)appName
+                  token:NSString
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
@@ -145,8 +153,16 @@ RCT_EXTERN_METHOD(signOut:(NSString)appName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(getCurrentUser:(RCTPromiseResolveBlock)resolve
+RCT_EXTERN_METHOD(sendPasswordResetEmail:(NSString)appName
+                  email:NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(fetchProvidersForEmail:(NSString)appName
+                  email:NSString
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 @end
 
 @interface RCT_EXTERN_MODULE(FirebaseBridgeFacebookAuthProvider, NSObject)

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import {
   AppRegistry,
   StyleSheet,
+  ScrollView,
   View,
   Text,
 } from 'react-native';
@@ -13,15 +14,7 @@ class testapp extends Component {
     state = { ready: false };
     async componentWillMount() {
         this.defaultApp = await firebase.initializeDefaultApp();
-        this.otherApp = await firebase.initializeApp({
-            APIKey: 'AIzaSyCl_ImAtqkkigLNrsK1XSOjPhzIQqFov4M',
-            googleAppID: '1:698755699724:ios:21914d25bfa88493',
-            databaseURL: 'https://fir-bridge2.firebaseio.com',
-            clientID: '698755699724-cf6i04ghv6m16d10qlerlsepldj9pvqj.apps.googleusercontent.com',
-            bundleID: 'com.testapp',
-            GCMSenderID: '698755699724',
-            storageBucket: 'fir-bridge2.appspot.com',
-        }, 'AnotherApp');
+        this.otherApp = await firebase.initializeApp(require('./app2-credentials.json'), 'AnotherApp');
         this.setState({ ready: true });
     }
     render() {
@@ -29,12 +22,15 @@ class testapp extends Component {
             return <View><Text>Initializing...</Text></View>;
         }
         return (
-            <View style={styles.container}>
-                    <DatabaseTest app={this.defaultApp} />
-                    <DatabaseTest app={this.otherApp} />
-                    {/*<AuthTest app={this.defaultApp} />*/}
+            <ScrollView style={styles.container}>
+                <DatabaseTest app={this.defaultApp} />
+                <DatabaseTest app={this.otherApp} />
+                <AuthTest app={this.defaultApp} />
+
+                {/*
                     <AuthTest app={this.otherApp} />
-            </View>
+                */}
+            </ScrollView>
         );
     }
 }
