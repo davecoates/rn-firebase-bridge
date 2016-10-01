@@ -44,9 +44,11 @@ export type DatabaseReference = Query & {
 export type User = {
     uid: string;
     email: ?string;
+    emailVerified: boolean;
+    providerId: string;
     displayName: ?string;
     photoUrl: ?string;
-    anonymous: boolean;
+    isAnonymous: boolean;
 }
 
 

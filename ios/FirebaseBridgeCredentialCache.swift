@@ -18,8 +18,11 @@ class FirebaseBridgeCredentialCache {
     return credentialUUID.UUIDString
   }
   
-  static func getCredential(id:String) -> FIRAuthCredential? {
-    return self.credentialCache.objectForKey(id) as? FIRAuthCredential
+  static func getCredential(id:String) throws -> FIRAuthCredential {
+    if let credential = credentialCache.objectForKey(id) as? FIRAuthCredential {
+      return credential
+    }
+    throw FirebaseBridgeError.CredentialNotFound()
   }
   
 }

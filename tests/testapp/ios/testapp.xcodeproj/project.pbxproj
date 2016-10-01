@@ -36,6 +36,7 @@
 		4A208197A6A042E884F64B64 /* Skia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 351486AAA4A94EFCB60141E8 /* Skia.ttf */; };
 		4EAF3062C45745A7B4ADB742 /* libOAuthManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2672A2AB0483458CBCCCF67B /* libOAuthManager.a */; };
 		553503451D9E170C007B8573 /* FirebaseBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553503441D9E170C007B8573 /* FirebaseBridgeError.swift */; };
+		55AD61461D9FE29D00C10285 /* FirebaseBridgeUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5555D0381D9FE06600B4E129 /* FirebaseBridgeUser.swift */; };
 		55B105E21D96497100A244B4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55B105E11D96497100A244B4 /* GoogleService-Info.plist */; };
 		55C906CD1D97DE22003B2212 /* FirebaseBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C41D97DE22003B2212 /* FirebaseBridge.m */; };
 		55C906CE1D97DE22003B2212 /* FirebaseBridgeApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 55C906C51D97DE22003B2212 /* FirebaseBridgeApp.swift */; };
@@ -188,6 +189,7 @@
 		4E3595FA00824C7EBCA92C01 /* Arial Black.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Arial Black.ttf"; path = "../node_modules/native-base/Fonts/Arial Black.ttf"; sourceTree = "<group>"; };
 		4FA4B14CB020491AADCE1B4C /* Andale Mono.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Andale Mono.ttf"; path = "../node_modules/native-base/Fonts/Andale Mono.ttf"; sourceTree = "<group>"; };
 		553503441D9E170C007B8573 /* FirebaseBridgeError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FirebaseBridgeError.swift; path = ../../../../ios/FirebaseBridgeError.swift; sourceTree = "<group>"; };
+		5555D0381D9FE06600B4E129 /* FirebaseBridgeUser.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FirebaseBridgeUser.swift; sourceTree = "<group>"; };
 		55B105E01D9647B000A244B4 /* testapp-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "testapp-Bridging-Header.h"; sourceTree = "<group>"; };
 		55B105E11D96497100A244B4 /* GoogleService-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		55C906C31D97DE22003B2212 /* FirebaseBridge.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FirebaseBridge.h; sourceTree = "<group>"; };
@@ -372,6 +374,7 @@
 				55C906CB1D97DE22003B2212 /* FirebaseBridgeGoogleAuthProvider.swift */,
 				55C906CC1D97DE22003B2212 /* FirebaseBridgeTwitterAuthProvider.swift */,
 				553503441D9E170C007B8573 /* FirebaseBridgeError.swift */,
+				5555D0381D9FE06600B4E129 /* FirebaseBridgeUser.swift */,
 			);
 			path = ios;
 			sourceTree = "<group>";
@@ -821,6 +824,7 @@
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
 				55C906CE1D97DE22003B2212 /* FirebaseBridgeApp.swift in Sources */,
 				55C906D51D97DE22003B2212 /* FirebaseBridgeTwitterAuthProvider.swift in Sources */,
+				55AD61461D9FE29D00C10285 /* FirebaseBridgeUser.swift in Sources */,
 				553503451D9E170C007B8573 /* FirebaseBridgeError.swift in Sources */,
 				55C906D31D97DE22003B2212 /* FirebaseBridgeGithubAuthProvider.swift in Sources */,
 				55C906CD1D97DE22003B2212 /* FirebaseBridge.m in Sources */,

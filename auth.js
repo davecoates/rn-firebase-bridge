@@ -2,18 +2,80 @@ import { NativeModules, NativeEventEmitter } from 'react-native';
 import type { User, AuthCredential, App } from './types';
 
 const NativeFirebaseBridgeAuth = NativeModules.FirebaseBridgeAuth;
+const NativeFirebaseBridgeUser = NativeModules.FirebaseBridgeUser;
 const authEmitter = new NativeEventEmitter(NativeFirebaseBridgeAuth);
 const authInstances = [];
 authEmitter.addListener(
-  'authStateDidChange',
-  ({ user, app }:{|user: ?User, app: String|}) => {
-      authInstances.forEach(auth => {
-          if (auth.app.name === app) {
-              auth._authStateChanged(user ? user : null);
-          }
-      })
-  }
+    'authStateDidChange',
+    ({ user, app }:{|user: ?User, app: String|}) => {
+        authInstances.forEach(auth => {
+            if (auth.app.name === app) {
+                auth._authStateChanged(user ? user : null);
+            }
+        })
+    }
 );
+
+class FirebaseUser {
+
+    app:App;
+
+    uid: string;
+    email: ?string;
+    emailVerified: boolean;
+    providerId: string;
+    displayName: ?string;
+    photoUrl: ?string;
+    isAnonymous: boolean;
+
+    constructor(app:App, user:User) {
+        this.app = app;
+        Object.keys(user).forEach(key => {
+            this[key] = user[key];
+        });
+    }
+
+    delete() : Promise<void> {
+        return NativeFirebaseBridgeUser.delete(this.app.name);
+    }
+
+    getToken() : Promise<string> {
+        return NativeFirebaseBridgeUser.getToken(this.app.name);
+    }
+
+    async link(credential) : Promise<User> {
+        return NativeFirebaseBridgeUser.link(this.app.name, (await credential).id);
+    }
+
+    async reauthenticate(credential) : Promise<void> {
+        return NativeFirebaseBridgeUser.reauthenticate(this.app.name, (await credential).id);
+    }
+
+    reload() : Promise<void> {
+        return NativeFirebaseBridgeUser.reload(this.app.name);
+    }
+
+    sendEmailVerification() : Promise<void> {
+        return NativeFirebaseBridgeUser.sendEmailVerification(this.app.name);
+    }
+
+    unlink(providerId:string) : Promise<void> {
+        return NativeFirebaseBridgeUser.unlink(this.app.name, providerId);
+    }
+
+    updateEmail(newEmail:string) : Promise<void> {
+        return NativeFirebaseBridgeUser.updateEmail(this.app.name, newEmail);
+    }
+
+    updatePassword(newPassword:string) : Promise<void> {
+        return NativeFirebaseBridgeUser.updatePassword(this.app.name, newPassword);
+    }
+
+    updateProfile(profile:{|displayName?:string, photoURL?:string|}) : Promise<void> {
+        return NativeFirebaseBridgeUser.updateProfile(this.app.name, [profile]);
+    }
+
+}
 
 export default class Auth {
     app: App;
@@ -21,7 +83,7 @@ export default class Auth {
     authStateDidChangeListeners:Array<AuthStateListener> = [];
 
     _authStateChanged(user) {
-        this.currentUser = user;
+        this.currentUser = user ? new FirebaseUser(this.app, user) : null;
         this.authStateDidChangeListeners.forEach(cb => cb(user));
     }
 

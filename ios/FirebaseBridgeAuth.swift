@@ -10,7 +10,8 @@ func userToDict(user:FIRUser) -> Dictionary<String, AnyObject> {
   var data:Dictionary<String, AnyObject> = [
     "uid": user.uid,
     "emailVerified": user.emailVerified,
-    "anonymous": user.anonymous,
+    "isAnonymous": user.anonymous,
+    "providerId": user.providerID,
   ]
   if let email = user.email {
     data["email"] = email
@@ -207,24 +208,21 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
   }
   
   @objc func signInWithCredential(appName:String, credentialId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let credential = FirebaseBridgeCredentialCache.getCredential(credentialId) {
-      do {
-        try self.getAuthInstance(appName)?.signInWithCredential(credential, completion: { (user, error) in
-          if let error = error {
-            self.reject(reject, error: error)
-            return;
-          }
-          resolve(userToDict(user!));
-        })
-      } catch let error as FirebaseBridgeError {
-        reject(error.code, error.description, nil)
-        return
-      } catch let unknownError as NSError {
-        reject("unknown_error", unknownError.localizedDescription, unknownError)
-        return
-      }
-    } else {
-      reject("auth/credential-not-found", "Credential not found", NSError(domain: "FirebaseBridgeAuth", code: 0, userInfo: nil));
+    do {
+      let credential = try FirebaseBridgeCredentialCache.getCredential(credentialId)
+      try self.getAuthInstance(appName)?.signInWithCredential(credential, completion: { (user, error) in
+        if let error = error {
+          self.reject(reject, error: error)
+          return;
+        }
+        resolve(userToDict(user!));
+      })
+    } catch let error as FirebaseBridgeError {
+      reject(error.code, error.description, nil)
+      return
+    } catch let unknownError as NSError {
+      reject("unknown_error", unknownError.localizedDescription, unknownError)
+      return
     }
   }
   

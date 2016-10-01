@@ -57,11 +57,13 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
         final WritableMap m = Arguments.createMap();
         m.putString("uid", user.getUid());
         m.putString("email", user.getEmail());
+        m.putString("emailVerified", user.isEmailVerified());
         m.putString("displayName", user.getDisplayName());
         if (user.getPhotoUrl() != null) {
             m.putString("photoUrl", user.getPhotoUrl().toString());
         }
-        m.putBoolean("anonymous", user.isAnonymous());
+        m.putBoolean("isAnonymous", user.isAnonymous());
+        m.putString("providerId", user.getProviderId());
         return m;
     }
 

@@ -16,7 +16,7 @@ export default function makeSuite(app) {
         });
         test('Authenticated database test', async (t) => {
             const user = await auth.signInAnonymously();
-            t.is(user.anonymous, true);
+            t.is(user.isAnonymous, true);
             const now = new Date();
             const ref = database.ref().child(now.getTime().toString());
             const value = now.toString();

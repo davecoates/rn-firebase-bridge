@@ -9,7 +9,7 @@ export default function makeSuite(app) {
                 if (onAuthStateChangedCalls === 2) {
                     t.truthy(user, '2nd onAuthStateChange user is set');
                     if (user) {
-                        t.is(user.anonymous, true, '2nd onAuthStateChange');
+                        t.is(user.isAnonymous, true, '2nd onAuthStateChange');
                     }
                 }
                 if (onAuthStateChangedCalls === 3) {
@@ -19,7 +19,7 @@ export default function makeSuite(app) {
                 onAuthStateChangedCalls++;
             });
             const user = await auth.signInAnonymously();
-            t.is(user.anonymous, true);
+            t.is(user.isAnonymous, true);
             t.deepEqual(auth.currentUser, user);
             await auth.signOut();
             await t.delay();

@@ -7,6 +7,35 @@ import firebase from '../../firebase';
 
 const defaultState = require('./testingState.json');
 
+const styles = StyleSheet.create({
+    container: {
+        borderTopWidth: 2,
+        borderBottomWidth: 2,
+    },
+    user: {
+        paddingTop: 20,
+    },
+    button: {
+        borderWidth: 1,
+        borderRadius: 5,
+        width: 300,
+        margin: 5,
+        padding: 5,
+    },
+    heading: {
+        fontWeight: 'bold',
+        margin: 10,
+    },
+    default: {
+        height: 26,
+        borderWidth: 0.5,
+        borderColor: '#0f0f0f',
+        flex: 1,
+        fontSize: 13,
+        padding: 4,
+    },
+});
+
 /**
  * To test github:
  * Go to https://github.com/login/oauth/authorize?client_id=<client id>
@@ -14,6 +43,49 @@ const defaultState = require('./testingState.json');
  * https://github.com/login/oauth/access_token with code, client id and secret
  * Take token and use below
  */
+
+ class ActionWithResult extends Component {
+
+    state = {
+        result: null,
+        error: null,
+        hasRun: false,
+    };
+
+    onPress = async () => {
+        const { action } = this.props;
+        this.setState({ result: null, error: null, hasRun: false });
+        try {
+            const result = await action();
+            this.setState({ result, hasRun: true });
+        } catch (error) {
+            this.setState({ error, hasRun: true });
+        }
+    }
+
+    render() {
+        const { buttonText } = this.props;
+        const { result, error, hasRun } = this.state;
+
+        return (
+            <View>
+                <Text
+                    style={styles.button}
+                    onPress={this.onPress}
+                >
+                    {buttonText}
+                </Text>
+                {hasRun && (
+                    <Text>
+                        {error ? 'Error: ' : 'Success: '}
+                        {prettyFormat(error || result)}
+                    </Text>
+                )}
+            </View>
+        );
+    }
+
+ }
 
 export default class AuthTest extends Component {
 
@@ -43,11 +115,11 @@ export default class AuthTest extends Component {
     };
 
     createUser = async () => {
-        console.log('create user')
         this.setState({ error: null, createUserResult: null });
         try {
             const { email, password } = this.state;
-            const createUserResult = await this.props.app.auth().createUserWithEmailAndPassword(email, password);
+            const createUserResult = await this.props.app.auth()
+                .createUserWithEmailAndPassword(email, password);
             this.setState({ createUserResult });
         } catch (error) {
             this.setState({ error });
@@ -99,7 +171,9 @@ export default class AuthTest extends Component {
     };
 
     render() {
-        const { providers, githubToken, expanded, email, password, user, error, createUserResult } = this.state;
+        const {
+            providers, githubToken, expanded, email, password, user, error, createUserResult,
+        } = this.state;
         return (
             <View style={styles.container}>
                 <Text>Auth Tests - {this.props.app.name}</Text>
@@ -109,56 +183,98 @@ export default class AuthTest extends Component {
                     <ScrollView>
                         <Text style={styles.user}>User: {prettyFormat(user)}</Text>
                         <Text style={styles.user}>Error: {prettyFormat(error)}</Text>
-                        <Text style={styles.user}>Create User Result: {prettyFormat(createUserResult)}</Text>
-                        <Text style={styles.button} onPress={this.signOut}>Sign Out</Text>
+                        <Text style={styles.user}>
+                            Create User Result: {prettyFormat(createUserResult)}
+                        </Text>
+                        <Text style={styles.button} onPress={this.signOut}>
+                            Sign Out
+                        </Text>
                         <Text style={styles.heading}>Sign in with email:</Text>
-                        <TextInput style={styles.default} value={email} onChange={this.emailChange} placeholder="Email" />
-                        <TextInput style={styles.default} value={password} onChange={this.passwordChange} placeholder="Password" />
+                        <TextInput
+                            style={styles.default}
+                            value={email}
+                            onChange={this.emailChange}
+                            placeholder="Email"
+                        />
+                        <TextInput
+                            style={styles.default}
+                            value={password}
+                            onChange={this.passwordChange}
+                            placeholder="Password"
+                        />
                         <Text onPress={this.signIn} style={styles.button}>Sign In</Text>
+
                         <Text style={styles.heading}>Create user:</Text>
-                        <TextInput style={styles.default} value={email} onChange={this.emailChange} placeholder="Email" />
-                        <TextInput style={styles.default} value={password} onChange={this.passwordChange} placeholder="Password" />
+                        <TextInput
+                            style={styles.default}
+                            value={email}
+                            onChange={this.emailChange}
+                            placeholder="Email"
+                        />
+                        <TextInput
+                            style={styles.default}
+                            value={password}
+                            onChange={this.passwordChange}
+                            placeholder="Password"
+                        />
                         <Text onPress={this.createUser} style={styles.button}>Create</Text>
+
                         <Text style={styles.heading}>Github auth:</Text>
-                        <TextInput capitalize="none" style={styles.default} value={githubToken} onChange={this.githubToken} placeholder="github token" />
-                        <Text onPress={this.loginWithGithub} style={styles.button}>Login with github</Text>
-                        <TextInput style={styles.default} value={email} onChange={this.emailChange} placeholder="Email" />
-                        <Text onPress={this.sendPasswordResetEmail} style={styles.button}>Send password reset</Text>
-                        <TextInput style={styles.default} value={email} onChange={this.emailChange} placeholder="Email" />
-                        <Text onPress={this.fetchProvidersForEmail} style={styles.button}>Fetch providers for email</Text>
+                        <TextInput
+                            capitalize="none"
+                            style={styles.default}
+                            value={githubToken}
+                            onChange={this.githubToken}
+                            placeholder="github token"
+                        />
+                        <Text onPress={this.loginWithGithub} style={styles.button}>
+                            Login with github
+                        </Text>
+
+                        <TextInput
+                            style={styles.default}
+                            value={email}
+                            onChange={this.emailChange}
+                            placeholder="Email"
+                        />
+                        <Text
+                            onPress={this.sendPasswordResetEmail}
+                            style={styles.button}
+                        >Send password reset</Text>
+                        <TextInput
+                            style={styles.default}
+                            value={email}
+                            onChange={this.emailChange}
+                            placeholder="Email"
+                        />
+                        <Text
+                            onPress={this.fetchProvidersForEmail}
+                            style={styles.button}
+                        >Fetch providers for email</Text>
                         <Text>Providers: {providers ? providers.join(', ') : 'None'}</Text>
+
+                        <Text style={styles.heading}>
+                            User functions
+                        </Text>
+                        <ActionWithResult
+                            action={() => this.props.app.auth().currentUser.sendEmailVerification()}
+                            buttonText="Send Email Verification"
+                        />
+                        <ActionWithResult
+                            action={() => this.props.app.auth().currentUser.delete()}
+                            buttonText="Delete"
+                        />
+                        <ActionWithResult
+                            action={() => this.props.app.auth().currentUser.getToken()}
+                            buttonText="getToken"
+                        />
+                        <ActionWithResult
+                            action={() => this.props.app.auth().currentUser.reload()}
+                            buttonText="Reload"
+                        />
                     </ScrollView>
                 }
             </View>
         );
     }
 }
-
-var styles = StyleSheet.create({
-    container: {
-        borderTopWidth: 2,
-        borderBottomWidth: 2,
-    },
-    user: {
-        paddingTop: 20,
-    },
-    button: {
-        borderWidth: 1,
-        borderRadius: 5,
-        width: 300,
-        margin: 5,
-        padding: 5,
-    },
-    heading: {
-        fontWeight: 'bold',
-        margin: 10,
-    },
-    default: {
-        height: 26,
-        borderWidth: 0.5,
-        borderColor: '#0f0f0f',
-        flex: 1,
-        fontSize: 13,
-        padding: 4,
-    },
-});
