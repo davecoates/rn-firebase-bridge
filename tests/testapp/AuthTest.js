@@ -159,7 +159,6 @@ export default class AuthTest extends Component {
         this.setState({ githubToken: e.nativeEvent.text });
     };
 
-
     loginWithGithub = async () => {
         const token = this.state.githubToken;
         const credential = firebase.auth.GithubAuthProvider.credential(token);
@@ -170,10 +169,17 @@ export default class AuthTest extends Component {
         }
     };
 
+    linkWithGithub = async () => {
+        const token = this.state.githubToken;
+        const credential = firebase.auth.GithubAuthProvider.credential(token);
+        return this.props.app.auth().currentUser.link(credential);
+    };
+
     render() {
         const {
             providers, githubToken, expanded, email, password, user, error, createUserResult,
         } = this.state;
+        const auth = this.props.app.auth();
         return (
             <View style={styles.container}>
                 <Text>Auth Tests - {this.props.app.name}</Text>
@@ -257,20 +263,42 @@ export default class AuthTest extends Component {
                             User functions
                         </Text>
                         <ActionWithResult
-                            action={() => this.props.app.auth().currentUser.sendEmailVerification()}
+                            action={() => auth.currentUser.sendEmailVerification()}
                             buttonText="Send Email Verification"
                         />
                         <ActionWithResult
-                            action={() => this.props.app.auth().currentUser.delete()}
+                            action={() => auth.currentUser.delete()}
                             buttonText="Delete"
                         />
                         <ActionWithResult
-                            action={() => this.props.app.auth().currentUser.getToken()}
+                            action={() => auth.currentUser.getToken()}
                             buttonText="getToken"
                         />
                         <ActionWithResult
-                            action={() => this.props.app.auth().currentUser.reload()}
+                            action={() => auth.currentUser.reload()}
                             buttonText="Reload"
+                        />
+                        <ActionWithResult
+                            action={() => auth.currentUser.updatePassword('password2')}
+                            buttonText="Update password (password2)"
+                        />
+                        <ActionWithResult
+                            action={() => auth.currentUser.updatePassword('password')}
+                            buttonText="Update password (password)"
+                        />
+                        <ActionWithResult
+                            action={this.linkWithGithub}
+                            buttonText="Link with github (fill token above)"
+                        />
+                        <ActionWithResult
+                            action={() => auth.currentUser.unlink('github.com')}
+                            buttonText="Unlink github"
+                        />
+                        <ActionWithResult
+                            action={() => auth.currentUser.updateProfile({
+                                displayName: Math.random().toString(),
+                            })}
+                            buttonText="Update display name"
                         />
                     </ScrollView>
                 }

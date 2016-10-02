@@ -220,6 +220,8 @@ class FirebaseBridgeUser : NSObject {
           self.reject(reject, error: error)
           return;
         }
+        // TODO: Should we resolve with updated user? User change doesn't
+        // seem to fire
         resolve(nil)
       }
     } catch let error as FirebaseBridgeError {
