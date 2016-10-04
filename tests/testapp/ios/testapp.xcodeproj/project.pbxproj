@@ -34,7 +34,6 @@
 		472E5D1BA0584475B3F502C5 /* libRNVectorIcons.a in Frameworks */ = {isa = PBXBuildFile; fileRef = D7BE14F9D0D94EE18CBFBBED /* libRNVectorIcons.a */; };
 		4855AC1E0F8E425F97C762A7 /* Microsoft Sans Serif.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3E1C5B7E016548F7BF85E6C1 /* Microsoft Sans Serif.ttf */; };
 		4A208197A6A042E884F64B64 /* Skia.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 351486AAA4A94EFCB60141E8 /* Skia.ttf */; };
-		4EAF3062C45745A7B4ADB742 /* libOAuthManager.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 2672A2AB0483458CBCCCF67B /* libOAuthManager.a */; };
 		553503451D9E170C007B8573 /* FirebaseBridgeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 553503441D9E170C007B8573 /* FirebaseBridgeError.swift */; };
 		55AD61461D9FE29D00C10285 /* FirebaseBridgeUser.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5555D0381D9FE06600B4E129 /* FirebaseBridgeUser.swift */; };
 		55B105E21D96497100A244B4 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 55B105E11D96497100A244B4 /* GoogleService-Info.plist */; };
@@ -125,13 +124,6 @@
 			remoteGlobalIDString = 83CBBA2E1A601D0E00E9B192;
 			remoteInfo = React;
 		};
-		55CB7CED1D9E43850058927F /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 134814201AA4EA6300B7C361;
-			remoteInfo = OAuthManager;
-		};
 		55CDA0F81D9785AC00584534 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 13C738B66C594169A5E015C4 /* RNVectorIcons.xcodeproj */;
@@ -181,7 +173,6 @@
 		17DC8D573AF148A99E079897 /* SF-UI-Text-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "SF-UI-Text-Regular.otf"; path = "../node_modules/native-base/Fonts/SF-UI-Text-Regular.otf"; sourceTree = "<group>"; };
 		1BC5025BE49B440181C50F37 /* EvilIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = EvilIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/EvilIcons.ttf"; sourceTree = "<group>"; };
 		20735FB5335F4C5BBCC67345 /* Times New Roman.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Times New Roman.ttf"; path = "../node_modules/native-base/Fonts/Times New Roman.ttf"; sourceTree = "<group>"; };
-		2672A2AB0483458CBCCCF67B /* libOAuthManager.a */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = archive.ar; path = libOAuthManager.a; sourceTree = "<group>"; };
 		2A315B25D6BEF01BF48866C7 /* Pods-testapp.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-testapp.release.xcconfig"; path = "Pods/Target Support Files/Pods-testapp/Pods-testapp.release.xcconfig"; sourceTree = "<group>"; };
 		351486AAA4A94EFCB60141E8 /* Skia.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Skia.ttf; path = "../node_modules/native-base/Fonts/Skia.ttf"; sourceTree = "<group>"; };
 		3E1C5B7E016548F7BF85E6C1 /* Microsoft Sans Serif.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Microsoft Sans Serif.ttf"; path = "../node_modules/native-base/Fonts/Microsoft Sans Serif.ttf"; sourceTree = "<group>"; };
@@ -205,7 +196,6 @@
 		5733DDCAF433482E9EF3A6A7 /* Zocial.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Zocial.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Zocial.ttf"; sourceTree = "<group>"; };
 		5FB22607B9B0427FADF7612C /* Pods_testapp.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_testapp.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		78C398B01ACF4ADC00677621 /* RCTLinking.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTLinking.xcodeproj; path = "../node_modules/react-native/Libraries/LinkingIOS/RCTLinking.xcodeproj"; sourceTree = "<group>"; };
-		7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = "wrapper.pb-project"; name = OAuthManager.xcodeproj; path = "../node_modules/react-native-oauth/ios/OAuthManager.xcodeproj"; sourceTree = "<group>"; };
 		832341B01AAA6A8300B99B32 /* RCTText.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = RCTText.xcodeproj; path = "../node_modules/react-native/Libraries/Text/RCTText.xcodeproj"; sourceTree = "<group>"; };
 		87A677AE14434B508ADA9896 /* Comic Sans MS.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Comic Sans MS.ttf"; path = "../node_modules/native-base/Fonts/Comic Sans MS.ttf"; sourceTree = "<group>"; };
 		8D18CF60230B4E848E81C164 /* Foundation.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Foundation.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Foundation.ttf"; sourceTree = "<group>"; };
@@ -246,7 +236,6 @@
 				139FDEF61B0652A700C62182 /* libRCTWebSocket.a in Frameworks */,
 				2E458339E0D5DCC3227A8E45 /* Pods_testapp.framework in Frameworks */,
 				472E5D1BA0584475B3F502C5 /* libRNVectorIcons.a in Frameworks */,
-				4EAF3062C45745A7B4ADB742 /* libOAuthManager.a in Frameworks */,
 				1E8706D84E124D6FB075176E /* StoreKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -379,14 +368,6 @@
 			path = ios;
 			sourceTree = "<group>";
 		};
-		55CB7CEA1D9E43850058927F /* Products */ = {
-			isa = PBXGroup;
-			children = (
-				55CB7CEE1D9E43850058927F /* libOAuthManager.a */,
-			);
-			name = Products;
-			sourceTree = "<group>";
-		};
 		55CDA0EB1D9785AC00584534 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -445,7 +426,6 @@
 				00C302DF1ABCB9EE00DB3ED1 /* RCTVibration.xcodeproj */,
 				139FDEE61B06529A00C62182 /* RCTWebSocket.xcodeproj */,
 				13C738B66C594169A5E015C4 /* RNVectorIcons.xcodeproj */,
-				7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */,
 			);
 			name = Libraries;
 			sourceTree = "<group>";
@@ -547,6 +527,9 @@
 						CreatedOnToolsVersion = 6.2;
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
+					13B07F861A680F5B00A75B9A = {
+						LastSwiftMigration = 0800;
+					};
 				};
 			};
 			buildConfigurationList = 83CBB9FA1A601CBA00E9B192 /* Build configuration list for PBXProject "testapp" */;
@@ -561,10 +544,6 @@
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
 			projectReferences = (
-				{
-					ProductGroup = 55CB7CEA1D9E43850058927F /* Products */;
-					ProjectRef = 7A0345E6BD7A4F85BFDB55D0 /* OAuthManager.xcodeproj */;
-				},
 				{
 					ProductGroup = 00C302A81ABCB8CE00DB3ED1 /* Products */;
 					ProjectRef = 00C302A71ABCB8CE00DB3ED1 /* RCTActionSheet.xcodeproj */;
@@ -673,13 +652,6 @@
 			fileType = archive.ar;
 			path = libReact.a;
 			remoteRef = 146834031AC3E56700842450 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		55CB7CEE1D9E43850058927F /* libOAuthManager.a */ = {
-			isa = PBXReferenceProxy;
-			fileType = archive.ar;
-			path = libOAuthManager.a;
-			remoteRef = 55CB7CED1D9E43850058927F /* PBXContainerItemProxy */;
 			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		55CDA0F91D9785AC00584534 /* libRNVectorIcons.a */ = {
@@ -905,6 +877,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = NO;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -923,6 +896,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.testapp;
 				PRODUCT_NAME = testapp;
 				SWIFT_OBJC_BRIDGING_HEADER = "testapp-Bridging-Header.h";
+				SWIFT_VERSION = 2.3;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Debug;
@@ -933,6 +907,7 @@
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
 					"$(inherited)",
@@ -951,6 +926,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = com.testapp;
 				PRODUCT_NAME = testapp;
 				SWIFT_OBJC_BRIDGING_HEADER = "testapp-Bridging-Header.h";
+				SWIFT_VERSION = 2.3;
 				VERSIONING_SYSTEM = "apple-generic";
 			};
 			name = Release;

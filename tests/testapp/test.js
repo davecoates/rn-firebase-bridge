@@ -28,11 +28,13 @@ async function test(label, fn) {
         ),
         is: buildComparator((a, b) => a === b, defaultMessage),
         deepEqual: buildComparator(isEqual, defaultMessage),
-        async wait(desc, f, timeout = 2000) {
-            promises.push(new Promise((resolve, reject) => {
+        wait(desc, f, timeout = 2000) {
+            const p = new Promise((resolve, reject) => {
                 f(resolve, reject);
                 setTimeout(() => reject(new Error(desc + ': Timeout')), timeout);
-            }));
+            });
+            promises.push(p);
+            return p;
         },
         async delay(timeout = 500) {
             return new Promise(resolve => setTimeout(resolve, timeout));
