@@ -28,7 +28,7 @@ async function test(label, fn) {
         ),
         is: buildComparator((a, b) => a === b, defaultMessage),
         deepEqual: buildComparator(isEqual, defaultMessage),
-        wait(desc, f, timeout = 2000) {
+        wait(desc, f, timeout = 3000) {
             const p = new Promise((resolve, reject) => {
                 f(resolve, reject);
                 setTimeout(() => reject(new Error(desc + ': Timeout')), timeout);

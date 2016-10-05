@@ -137,7 +137,7 @@ export class Query {
         if (key != null) {
             q.push(key);
         }
-        return new Query(this.parentPromise, [...this.query, q]);
+        return new Query(this.app, this.parentPromise, [...this.query, q]);
     }
 
     endAt(value:number|string|boolean|null, key:?string) : QueryType {
@@ -145,7 +145,7 @@ export class Query {
         if (key != null) {
             q.push(key);
         }
-        return new Query(this.parentPromise, [...this.query, q]);
+        return new Query(this.app, this.parentPromise, [...this.query, q]);
     }
 
     equalTo(value:number|string|boolean|null, key:?string) : QueryType {
@@ -153,15 +153,15 @@ export class Query {
         if (key != null) {
             q.push(key);
         }
-        return new Query(this.parentPromise, [...this.query, q]);
+        return new Query(this.app, this.parentPromise, [...this.query, q]);
     }
 
     limitToFirst(limit:number) : QueryType {
-        return new Query(this.parentPromise, [...this.query, ['limitToFirst', limit]]);
+        return new Query(this.app, this.parentPromise, [...this.query, ['limitToFirst', limit]]);
     }
 
     limitToLast(limit:number) : QueryType {
-        return new Query(this.parentPromise, [...this.query, ['limitToLast', limit]]);
+        return new Query(this.app, this.parentPromise, [...this.query, ['limitToLast', limit]]);
     }
 
     /**
@@ -263,19 +263,19 @@ export class Query {
     }
 
     orderByChild(path:string) : QueryType {
-        return new Query(this.parentPromise, [...this.query, ['orderByChild', path]]);
+        return new Query(this.app, this.parentPromise, [...this.query, ['orderByChild', path]]);
     }
 
     orderByKey() : QueryType {
-        return new Query(this.parentPromise, [...this.query, ['orderByKey']]);
+        return new Query(this.app, this.parentPromise, [...this.query, ['orderByKey']]);
     }
 
     orderByPriority() : QueryType {
-        return new Query(this.parentPromise, [...this.query, ['orderByPriority']]);
+        return new Query(this.app, this.parentPromise, [...this.query, ['orderByPriority']]);
     }
 
     orderByValue() : QueryType {
-        return new Query(this.parentPromise, [...this.query, ['orderByValue']]);
+        return new Query(this.app, this.parentPromise, [...this.query, ['orderByValue']]);
     }
 
     toString() : Promise<string> {

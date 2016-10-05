@@ -99,5 +99,82 @@ export default function makeSuite(app) {
             await ref.push().setValue(value + ' LAST');
             await t.delay();
         });
+
+
+        test('limitToFirst/Last, start/endAt', async (t) => {
+            if (!auth.currentUser) {
+                await auth.signInAnonymously();
+            }
+            const ref = database.ref().child(Math.random().toString().split('.')[1]);
+            const value = [1, 2, 3, 4, 5, 6];
+            await ref.setValue(value);
+            await t.wait('wait on limitToFirst', resolve => {
+                ref.limitToFirst(2).once('value', async (snapshot) => {
+                    t.is(await snapshot.numChildren(), 2, 'Number of children');
+                    t.is(await snapshot.hasChildren(), true, 'Has children');
+                    let count = 0;
+                    await snapshot.forEach(async (child) => {
+                        t.is(await child.val(), value[count], 'Snapshot val');
+                        count++;
+                    });
+                    t.is(count, 2);
+                    resolve();
+                });
+            });
+            await t.wait('wait on limitToLast', resolve => {
+                const limit = 3;
+                ref.limitToLast(limit).once('value', async (snapshot) => {
+                    t.is(await snapshot.numChildren(), limit, 'Number of children');
+                    t.is(await snapshot.hasChildren(), true, 'Has children');
+                    let count = 0;
+                    const offset = value.length - limit;
+                    t.deepEqual(
+                        // I think this is right? Firebase will maintain indices?
+                        [null, null, null, ...value.slice(offset)],
+                        await snapshot.val());
+                    await snapshot.forEach(async (child) => {
+                        t.is(await child.val(), value[offset + count], 'Snapshot val');
+                        count++;
+                    });
+                    t.is(count, limit);
+                    resolve();
+                });
+            });
+            await t.wait('wait on startAt', resolve => {
+                const index = 2;
+                ref.orderByValue().startAt(value[index]).once('value', async (snapshot) => {
+                    t.is(await snapshot.numChildren(), value.length - index, 'Number of children');
+                    t.is(await snapshot.hasChildren(), true, 'Has children');
+                    let count = 0;
+                    const offset = index;
+                    t.deepEqual(
+                        // I think this is right? Firebase will maintain indices?
+                        [null, null, ...value.slice(index)],
+                        await snapshot.val(),
+                        'startAt snapshot.val()');
+                    await snapshot.forEach(async (child) => {
+                        t.is(await child.val(), value[offset + count], 'Snapshot val');
+                        count++;
+                    });
+                    t.is(count, value.length - index);
+                    resolve();
+                });
+            });
+            await t.wait('wait on endAt', resolve => {
+                const index = 2;
+                ref.orderByValue().endAt(value[index]).once('value', async (snapshot) => {
+                    t.is(await snapshot.numChildren(), index + 1, 'Number of children');
+                    t.is(await snapshot.hasChildren(), true, 'Has children');
+                    let count = 0;
+                    t.deepEqual(value.slice(0, index + 1), await snapshot.val());
+                    await snapshot.forEach(async (child) => {
+                        t.is(await child.val(), value[count], 'Snapshot val');
+                        count++;
+                    });
+                    t.is(count, index + 1);
+                    resolve();
+                });
+            });
+        });
     });
 }

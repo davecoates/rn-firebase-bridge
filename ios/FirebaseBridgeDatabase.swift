@@ -381,10 +381,17 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
                  rejecter: reject)
   }
   
-  @objc func setPersistenceEnabled(enabled:Bool) {
-    if (FIRDatabase.database().persistenceEnabled != enabled) {
-      FIRDatabase.database().persistenceEnabled = enabled
+  @objc func setPersistenceEnabled(appName: String, enabled:Bool) throws {
+    if let app = FIRApp(named: appName) {
+        let database = FIRDatabase.database(app: app)
+        if (database.persistenceEnabled != enabled) {
+            database.persistenceEnabled = enabled
+        }
+    } else {
+        throw FirebaseBridgeError.AppNotFound(appName: appName)
     }
+
+  
   }
   
 }

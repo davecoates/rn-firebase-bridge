@@ -113,7 +113,8 @@ RCT_EXTERN_METHOD(root:(NSString)appName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
-RCT_EXTERN_METHOD(setPersistenceEnabled:(BOOL)enabled)
+RCT_EXTERN_METHOD(setPersistenceEnabled:(NSString)appName
+                  enabled:BOOL)
 
 @end
 
