@@ -357,6 +357,19 @@ export class DatabaseReference extends Query {
 
 class Database {
 
+    static ServerValue = {
+        TIMESTAMP: '@@firebase/ServerValue/TIMESTAMP',
+    };
+
+    static enableLogging(enabled) {
+        NativeFirebaseBridgeDatabase.enableLogging(enabled);
+    }
+
+    static sdkVersion() : Promise<string> {
+        return NativeFirebaseBridgeDatabase.sdkVersion();
+    }
+
+
     app: App;
 
     constructor(app:App) {
@@ -364,11 +377,15 @@ class Database {
     }
 
     goOffline() {
-
+        NativeFirebaseBridgeDatabase.goOffline(this.app.name);
     }
 
     goOnline() {
+        NativeFirebaseBridgeDatabase.goOnline(this.app.name);
+    }
 
+    setPersistenceEnabled(enabled:boolean) {
+        NativeFirebaseBridgeDatabase.setPersistenceEnabled(this.app.name, enabled);
     }
 
     ref(path?:string) : DatabaseReference {
@@ -380,6 +397,8 @@ class Database {
     }
 
     refFromURL(url) : DatabaseReference {
+        return new DatabaseReference(this.app, NativeFirebaseBridgeDatabase.refFromURL(
+            this.app.name, url));
     }
 
 }

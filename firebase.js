@@ -14,10 +14,6 @@ invariant(
     "added the 'ios' directory from rn-firebase-bridge to 'Libraries' in Xcode"
 );
 
-const SDK_VERSION = '???';
-const appsByName = {}
-const apps = [];
-
 class App {
     name: String;
     options: {};
@@ -42,31 +38,27 @@ class App {
 }
 
 async function initializeApp(options, name?:string) : Promise<types.App> {
-    const app = new App(await NativeFirebaseBridgeApp.initializeApp(options, name));
-    apps.push(app);
-    return app;
+    return new App(await NativeFirebaseBridgeApp.initializeApp(options, name));
 }
+
+let defaultApp;
 
 async function initializeDefaultApp() : Promise<types.App> {
-    const app = new App(await NativeFirebaseBridgeApp.initializeDefaultApp());
+    if (!defaultApp) {
+        defaultApp = new App(await NativeFirebaseBridgeApp.initializeDefaultApp());
+    }
 
-    return app;
+    return defaultApp;
 }
 
-function database() {
-    return new Database();
+async function database() : Promise<Database> {
+    const app = await initializeDefaultApp();
+    return app.database();
 }
 
-database.ServerValue = {
-    TIMESTAMP: '@@firebase/ServerValue/TIMESTAMP',
-};
-
-database.enableLogging = enabled => {
-    console.error("Not implemented");
-}
-
-function auth() {
-    return new Auth();
+async function auth() : Promise<Auth> {
+    const app = await initializeDefaultApp();
+    return app.database();
 }
 auth.FacebookAuthProvider = Auth.FacebookAuthProvider;
 auth.GoogleAuthProvider = Auth.GoogleAuthProvider;
@@ -74,10 +66,8 @@ auth.GithubAuthProvider = Auth.GithubAuthProvider;
 auth.TwitterAuthProvider = Auth.TwitterAuthProvider;
 
 export default {
-    apps,
     database,
     auth,
-    SDK_VERSION,
     initializeApp,
     initializeDefaultApp,
 };

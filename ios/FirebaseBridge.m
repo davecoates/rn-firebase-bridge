@@ -103,6 +103,11 @@ RCT_EXTERN_METHOD(ref:(NSString)appName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(refFromURL:(NSString)appName
+                  url:(NSString)url
+                  resolver:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
 RCT_EXTERN_METHOD(parent:(NSString)appName
                   databaseUrl:(NSString)databaseUrl
                   resolver:(RCTPromiseResolveBlock)resolve
@@ -113,8 +118,17 @@ RCT_EXTERN_METHOD(root:(NSString)appName
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 
+RCT_EXTERN_METHOD(sdkVersion:(RCTPromiseResolveBlock)resolve
+                  rejecter:(RCTPromiseRejectBlock)reject)
+
+RCT_EXTERN_METHOD(enableLogging:(BOOL)enabled)
+
 RCT_EXTERN_METHOD(setPersistenceEnabled:(NSString)appName
-                  enabled:BOOL)
+                  enabled:(BOOL)enabled)
+
+RCT_EXTERN_METHOD(goOnline:(NSString)appName)
+
+RCT_EXTERN_METHOD(goOffline:(NSString)appName)
 
 @end
 

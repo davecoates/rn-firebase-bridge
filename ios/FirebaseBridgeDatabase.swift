@@ -346,6 +346,15 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
                  rejecter: reject)
   }
   
+  @objc func refFromURL(appName: String, url: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let app = FIRApp(named: appName) {
+        let database = FIRDatabase.database(app: app)
+        let ref = database.referenceFromURL(url)
+        resolve(convertRef(ref))
+    } else {
+        reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
+    }  }
+  
   @objc func ref(appName: String, path: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     var ref:FIRDatabaseReference
     if let app = FIRApp(named: appName) {
@@ -381,18 +390,43 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
                  rejecter: reject)
   }
   
-  @objc func setPersistenceEnabled(appName: String, enabled:Bool) throws {
+  @objc func setPersistenceEnabled(appName: String, enabled:Bool) {
     if let app = FIRApp(named: appName) {
         let database = FIRDatabase.database(app: app)
         if (database.persistenceEnabled != enabled) {
             database.persistenceEnabled = enabled
         }
     } else {
-        throw FirebaseBridgeError.AppNotFound(appName: appName)
+        print("\(appName) not found - persistence not enabled")
     }
-
-  
   }
   
+  @objc func enableLogging(enabled:Bool) {
+    FIRDatabase.setLoggingEnabled(enabled)
+  }
+  
+  @objc func sdkVersion(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    resolve(FIRDatabase.sdkVersion());
+  }
+    
+    @objc func goOffline(appName: String) {
+        if let app = FIRApp(named: appName) {
+            let database = FIRDatabase.database(app: app)
+            database.goOffline()
+        } else {
+            print("\(appName) not found - goOffline failed")
+        }
+    }
+
+    
+    @objc func goOnline(appName: String) {
+        if let app = FIRApp(named: appName) {
+            let database = FIRDatabase.database(app: app)
+            database.goOnline()
+        } else {
+            print("\(appName) not found - goOnline failed")
+        }
+    }
+    
 }
 

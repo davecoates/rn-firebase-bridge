@@ -13,6 +13,8 @@ export default function makeSuite(app) {
             t.is(database.ref().toString(), dbUrl);
             t.is(database.ref(base).root().toString(), dbUrl);
             t.is(database.ref().child('test').toString(), `${dbUrl}/test`);
+            const url = `${dbUrl}/level1/level2`;
+            t.is(database.refFromURL(url).toString(), url);
         });
 
         test('on child_added', async (t) => {
