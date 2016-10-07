@@ -7,11 +7,13 @@ import Auth from './auth';
 // See
 // https://firebase.google.com/docs/reference/js/firebase
 
+console.log(Object.keys(NativeModules));
 const NativeFirebaseBridgeApp = NativeModules.FirebaseBridgeApp;
 invariant(
     NativeFirebaseBridgeApp,
     'Native module not found; on iOS this can happen if you have not yet ' +
-    "added the 'ios' directory from rn-firebase-bridge to 'Libraries' in Xcode"
+    "added the 'ios' directory from rn-firebase-bridge to 'Libraries' in Xcode." +
+    " On Android make sure you have run 'react-native link'."
 );
 
 class App {

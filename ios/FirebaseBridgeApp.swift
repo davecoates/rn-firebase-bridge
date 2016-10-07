@@ -10,12 +10,9 @@ func appToDict(app:FIRApp) -> Dictionary<String, AnyObject> {
   let optionsDict = options.dictionaryWithValuesForKeys([
     "androidClientID",
     "APIKey",
-    "clientID",
     "databaseURL",
-    "deepLinkURLScheme",
     "GCMSenderID",
     "googleAppID",
-    "trackingID",
     "storageBucket",
     ])
   let data:Dictionary<String, AnyObject> = [
