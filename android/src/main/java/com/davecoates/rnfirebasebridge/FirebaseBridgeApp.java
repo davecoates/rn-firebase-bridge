@@ -3,7 +3,6 @@ package com.davecoates.rnfirebasebridge;
 import com.facebook.react.bridge.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
-import com.google.firebase.FirebaseOptions;
 
 
 public class FirebaseBridgeApp extends ReactContextBaseJavaModule {
@@ -36,7 +35,11 @@ public class FirebaseBridgeApp extends ReactContextBaseJavaModule {
     {
         FirebaseApp app = FirebaseApp.initializeApp(
                 this.getReactApplicationContext());
-        promise.resolve(convertApp(app));
+        if (app == null) {
+            promise.reject("app_not_found", "App not found. Have you added google-sevices.json to your app?");
+        } else {
+            promise.resolve(convertApp(app));
+        }
     }
 
     @ReactMethod

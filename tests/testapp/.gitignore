@@ -41,3 +41,4 @@ android/app/libs
 android/keystores/debug.keystore
 app2-credentials.json
 testingState.json
+google-services.json
