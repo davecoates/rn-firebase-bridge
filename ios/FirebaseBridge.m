@@ -224,6 +224,7 @@ RCT_EXTERN_METHOD(delete:(NSString)appName
                   rejecter:(RCTPromiseRejectBlock)reject)
 
 RCT_EXTERN_METHOD(getToken:(NSString)appName
+                  forceRefresh:(BOOL)forceRefresh
                   resolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 

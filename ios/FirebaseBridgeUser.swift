@@ -68,16 +68,16 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func getToken(appName:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func getToken(appName:String, forceRefresh:Bool, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
   {
     do {
-      try self.getUser(appName).getTokenWithCompletion{ (token, error) in
+      try self.getUser(appName).getTokenForcingRefresh(forceRefresh, completion: { (token, error) in
         if let error = error {
           self.reject(reject, error: error)
           return;
         }
         resolve(token)
-      }
+      })
     } catch let error as FirebaseBridgeError {
       reject(error.code, error.description, nil)
       return

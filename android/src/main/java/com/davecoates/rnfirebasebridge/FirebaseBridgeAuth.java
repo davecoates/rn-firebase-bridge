@@ -68,10 +68,14 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
 
     private Map<String, FirebaseAuth.AuthStateListener> authStateDidChangeListeners = new HashMap<>();
 
-    private void rejectFromException(Exception e, Promise promise) {
+    static public void rejectFromException(Exception e, Promise promise) {
         // Error codes as per https://firebase.google.com/docs/reference/js/firebase.auth.Auth#createUserWithEmailAndPassword
         if (e instanceof FirebaseAuthWeakPasswordException) {
             promise.reject("auth/weak-password", e.getMessage());
+            return;
+        }
+        if (e instanceof FirebaseAuthRecentLoginRequiredException) {
+            promise.reject("auth/requires-recent-login", e.getMessage());
             return;
         }
         if (e instanceof FirebaseAuthUserCollisionException) {

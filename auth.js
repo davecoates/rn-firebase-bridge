@@ -39,8 +39,8 @@ class FirebaseUser {
         return NativeFirebaseBridgeUser.delete(this.app.name);
     }
 
-    getToken() : Promise<string> {
-        return NativeFirebaseBridgeUser.getToken(this.app.name);
+    getToken(forceRefresh = false) : Promise<string> {
+        return NativeFirebaseBridgeUser.getToken(this.app.name, forceRefresh);
     }
 
     async link(credential) : Promise<User> {
