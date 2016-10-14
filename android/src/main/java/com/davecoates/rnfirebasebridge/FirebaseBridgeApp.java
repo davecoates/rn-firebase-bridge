@@ -4,6 +4,8 @@ import com.facebook.react.bridge.*;
 import com.google.firebase.FirebaseApp;
 import com.google.firebase.FirebaseOptions;
 
+import java.util.List;
+
 
 public class FirebaseBridgeApp extends ReactContextBaseJavaModule {
 
@@ -45,6 +47,14 @@ public class FirebaseBridgeApp extends ReactContextBaseJavaModule {
     @ReactMethod
     public void initializeApp(ReadableMap options, String name, Promise promise)
     {
+        List<FirebaseApp> apps =
+                FirebaseApp.getApps(this.getReactApplicationContext());
+        for (FirebaseApp app : apps) {
+            if (app.getName().equals(name)) {
+                promise.resolve(convertApp(app));
+                return;
+            }
+        }
         FirebaseOptions.Builder builder = new FirebaseOptions.Builder();
         if (options.hasKey("APIKey")) {
             builder.setApiKey(options.getString("APIKey"));

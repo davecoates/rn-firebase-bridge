@@ -186,7 +186,7 @@ export default class AuthTest extends Component {
                 <Text style={styles.button} onPress={this.toggleExpanded}>
                     {expanded ? 'Collapse' : 'Expand'}
                 </Text>
-                {/*<TestSuite suite={makeSuite(this.props.app)} />*/}
+                <TestSuite suite={makeSuite(this.props.app)} />
                 {expanded &&
                     <ScrollView>
                         <Text style={styles.user}>User: {prettyFormat(user)}</Text>

@@ -59,7 +59,12 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
     private WritableMap convertRef(DatabaseReference ref) {
 
         final WritableMap m = Arguments.createMap();
-        m.putString("key", ref.getKey());
+        String key = ref.getKey();
+        if (key == null) {
+            m.putString("key", "");
+        } else {
+            m.putString("key", ref.getKey());
+        }
         m.putString("locationUrl", ref.toString());
 
         return m;
@@ -339,6 +344,9 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
             case "java.lang.Boolean":
                 promise.resolve((Boolean)value);
                 break;
+            case "java.lang.Long":
+                promise.resolve(((Long)value).doubleValue());
+                break;
             case "java.lang.Integer":
                 promise.resolve((Integer)value);
                 break;
@@ -355,7 +363,7 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                 promise.resolve(convertSnapshotList(snapshot.getChildren()));
                 break;
             default:
-                promise.resolve(null);
+                promise.reject("unhandled_value_type", value.getClass().getName());
         }
     }
 

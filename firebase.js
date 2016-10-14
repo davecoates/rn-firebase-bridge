@@ -7,7 +7,6 @@ import Auth from './auth';
 // See
 // https://firebase.google.com/docs/reference/js/firebase
 
-console.log(Object.keys(NativeModules));
 const NativeFirebaseBridgeApp = NativeModules.FirebaseBridgeApp;
 invariant(
     NativeFirebaseBridgeApp,
@@ -20,7 +19,7 @@ class App {
     name: String;
     options: {};
 
-    _auth: Auth;
+    authInstance: Auth;
 
     constructor(data) {
         this.name = data.name;
@@ -32,10 +31,10 @@ class App {
     }
 
     auth() {
-        if (!this._auth) {
-            this._auth = new Auth(this);
+        if (!this.authInstance) {
+            this.authInstance = new Auth(this);
         }
-        return this._auth;
+        return this.authInstance;
     }
 }
 
