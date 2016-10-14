@@ -52,7 +52,7 @@ public class FirebaseBridgeAuth extends ReactContextBaseJavaModule {
         return "FirebaseBridgeAuth";
     }
 
-    private WritableMap convertUser(FirebaseUser user) {
+    static public WritableMap convertUser(FirebaseUser user) {
         final WritableMap m = Arguments.createMap();
         m.putString("uid", user.getUid());
         m.putString("email", user.getEmail());
