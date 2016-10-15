@@ -17,33 +17,53 @@ const styles = StyleSheet.create({
     error: {
         color: 'red',
     },
+    button: {
+        borderWidth: 1,
+        borderRadius: 5,
+        width: 300,
+        margin: 5,
+        padding: 5,
+    },
 });
 
 export default class TestSuite extends Component {
 
-    componentWillMount() {
-        this.runSuite(this.props.suite);
-    }
+    state = {
+        started: false,
+    };
 
     componentWillReceiveProps(nextProps) {
-        this.runSuite(nextProps.suite);
+        if (this.state.started) {
+            this.runSuite(nextProps.suite);
+        }
     }
 
-    async runSuite(run) {
-        this.setState({ pending: true });
+    runSuite = async (run) => {
+        this.setState({ pending: true, started: true });
         const results = await run();
         results.forEach(({ label, errors, passed }) => {
             if (errors.length) {
-                console.group(`${label} (${passed} passed, ${errors.length} failed)`);
-                errors.map(error => console.log(error));
-                console.groupEnd();
+                console.group( // eslint-disable-line
+                    `${label} (${passed} passed, ${errors.length} failed)`);
+                errors.map(error => console.log(error)); // eslint-disable-line
+                console.groupEnd(); // eslint-disable-line
             }
         });
         this.setState({ pending: false, results });
-    }
+    };
 
     render() {
-        const { results, pending } = this.state;
+        const { results, pending, started } = this.state;
+        if (!started) {
+            return (
+                <Text
+                    style={styles.button}
+                    onPress={this.runSuite.bind(this, this.props.suite)}
+                >
+                    Run
+                </Text>
+            );
+        }
         if (pending) {
             return <Text>.</Text>;
         }
@@ -52,7 +72,7 @@ export default class TestSuite extends Component {
                 {results.map(({ errors, passed }, i) =>
                     <Text key={i} style={[
                         errors.length ? styles.error : styles.success,
-                        styles.result
+                        styles.result,
                     ]}>
                         <Text style={styles.success}>✓ {passed}</Text>
                         ✘ {errors.length}

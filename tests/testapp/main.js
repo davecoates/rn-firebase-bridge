@@ -26,10 +26,7 @@ class testapp extends Component {
                 <DatabaseTest app={this.defaultApp} />
                 <DatabaseTest app={this.otherApp} />
                 <AuthTest app={this.defaultApp} />
-
-                {/*
-                    <AuthTest app={this.otherApp} />
-                */}
+                <AuthTest app={this.otherApp} />
             </ScrollView>
         );
     }
