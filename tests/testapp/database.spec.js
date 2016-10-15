@@ -1,12 +1,13 @@
 import suite from './test';
 
 export default function makeSuite(app) {
-    const dbUrl = app.options.databaseURL;
     const database = app.database();
     const auth = app.auth();
     const base = String(Math.random()).split('.')[1];
     return suite(async (test) => {
         test('Keys and refs', async (t) => {
+            await app.ready();
+            const dbUrl = app.options.databaseURL;
             t.is(database.ref(base).key(), base);
             t.is(database.ref(base).toString(), `${dbUrl}/${base}`);
             t.is(database.ref().key(), '');
@@ -69,6 +70,7 @@ export default function makeSuite(app) {
                 let called = 0;
                 const unsub = ref.on('value', async (snapshot) => {
                     called++;
+                    console.log(called, '!!!')
                     t.is(called <= 3, true, 'Call count');
                     const v = await snapshot.val();
                     t.is(typeof v, 'object');

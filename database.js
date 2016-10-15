@@ -14,9 +14,6 @@ import type {
 
 const NativeFirebaseBridgeDatabase = NativeModules.FirebaseBridgeDatabase;
 
-invariant(NativeFirebaseBridgeDatabase,
-         "Native bridge not found. This is likely because the native code hasn't been added to your project.")
-
 export class DataSnapshot {
 
     parentPromise:Promise<DataSnapshotDescriptor>;
@@ -126,9 +123,13 @@ export class Query {
     parentPromise: Promise<DatabaseReferenceDescriptor>;
     query:Array<Array<any>>;
 
-    constructor(app:App, parentPromise:Promise<DatabaseReferenceDescriptor>, query:Array<Array<any>> = []) {
+    constructor(
+        app:App,
+        parentPromise:Promise<DatabaseReferenceDescriptor>,
+        query:Array<Array<any>> = []) {
         this.app = app;
-        this.parentPromise = parentPromise;
+        // Wait on app to be ready to we can guarantee name is set
+        this.parentPromise = Promise.all([parentPromise, app.ready()]).then(([data]) => data);
         this.query = query;
     }
 
@@ -376,15 +377,18 @@ class Database {
         this.app = app;
     }
 
-    goOffline() {
+    async goOffline() {
+        await this.app.ready();
         NativeFirebaseBridgeDatabase.goOffline(this.app.name);
     }
 
-    goOnline() {
+    async goOnline() {
+        await this.app.ready();
         NativeFirebaseBridgeDatabase.goOnline(this.app.name);
     }
 
-    setPersistenceEnabled(enabled:boolean) {
+    async setPersistenceEnabled(enabled:boolean) {
+        await this.app.ready();
         NativeFirebaseBridgeDatabase.setPersistenceEnabled(this.app.name, enabled);
     }
 
@@ -392,13 +396,15 @@ class Database {
         invariant(path == null || typeof path == 'string',
             `If path is provided it must be a string, received ${typeof path}`
         );
-        return new DatabaseReference(this.app, NativeFirebaseBridgeDatabase.ref(
-            this.app.name, path));
+        const ref = this.app.ready().then(
+            () => NativeFirebaseBridgeDatabase.ref(this.app.name, path));
+        return new DatabaseReference(this.app, ref);
     }
 
     refFromURL(url) : DatabaseReference {
-        return new DatabaseReference(this.app, NativeFirebaseBridgeDatabase.refFromURL(
-            this.app.name, url));
+        const ref = this.app.ready().then(
+            () => NativeFirebaseBridgeDatabase.refFromURL(this.app.name, url));
+        return new DatabaseReference(this.app, ref);
     }
 
 }

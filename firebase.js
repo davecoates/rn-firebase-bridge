@@ -15,15 +15,41 @@ invariant(
     " On Android make sure you have run 'react-native link'."
 );
 
+type AppData = { name: String; options: {}};
+
 class App {
-    name: String;
-    options: {};
+    _name: String;
+    _options: {};
 
     authInstance: Auth;
 
-    constructor(data) {
-        this.name = data.name;
-        this.options = data.options;
+    isReady = false;
+    readyPromise: Promise<void>;
+
+    get name() {
+        if (!this.isReady) {
+            throw new Error('Attempted to access app name before app was ready');
+        }
+        return this._name;
+    }
+
+    get options() {
+        if (!this.isReady) {
+            throw new Error('Attempted to access app options before app was ready');
+        }
+        return this._options;
+    }
+
+    constructor(promise:Promise<AppData>) {
+        this.readyPromise = promise.then((data:AppData) => {
+            this._name = data.name;
+            this._options = data.options;
+            this.isReady = true;
+        });
+    }
+
+    ready() : Promise {
+        return this.readyPromise;
     }
 
     database() {
@@ -38,27 +64,27 @@ class App {
     }
 }
 
-async function initializeApp(options, name?:string) : Promise<types.App> {
-    return new App(await NativeFirebaseBridgeApp.initializeApp(options, name));
+async function initializeApp(options, name?:string) : types.App {
+    return new App(NativeFirebaseBridgeApp.initializeApp(options, name));
 }
 
 let defaultApp;
 
-async function initializeDefaultApp() : Promise<types.App> {
+async function initializeDefaultApp() : types.App {
     if (!defaultApp) {
-        defaultApp = new App(await NativeFirebaseBridgeApp.initializeDefaultApp());
+        defaultApp = new App(NativeFirebaseBridgeApp.initializeDefaultApp());
     }
 
     return defaultApp;
 }
 
-async function database() : Promise<Database> {
-    const app = await initializeDefaultApp();
+async function database() : Database {
+    const app = initializeDefaultApp();
     return app.database();
 }
 
-async function auth() : Promise<Auth> {
-    const app = await initializeDefaultApp();
+async function auth() : Auth {
+    const app = initializeDefaultApp();
     return app.database();
 }
 auth.FacebookAuthProvider = Auth.FacebookAuthProvider;

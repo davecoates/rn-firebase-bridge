@@ -9,7 +9,7 @@ export default class DatabaseTest extends Component {
     render() {
         return (
             <View>
-                <Text>Database Tests - {this.props.app.name}</Text>
+                <Text>Database Tests - {this.props.app.isReady && this.props.app.name}</Text>
                 <TestSuite suite={makeSuite(this.props.app)} />
             </View>
         );

@@ -182,7 +182,7 @@ export default class AuthTest extends Component {
         const auth = this.props.app.auth();
         return (
             <View style={styles.container}>
-                <Text>Auth Tests - {this.props.app.name}</Text>
+                <Text>Auth Tests - {this.props.app.isReady && this.props.app.name}</Text>
                 <Text style={styles.button} onPress={this.toggleExpanded}>
                     {expanded ? 'Collapse' : 'Expand'}
                 </Text>

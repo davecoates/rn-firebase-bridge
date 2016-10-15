@@ -8,6 +8,8 @@
     "es6": true
   },
   "rules": {
+      "no-underscore-dangle": 0,
+      "import/no-unresolved": 0,
       "indent": [2, 4, {"SwitchCase": 1}],
       "eqeqeq": [2, "smart"],
       "new-cap": 0,
