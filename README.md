@@ -1,24 +1,19 @@
 # React Native Firebase Bridge
 
-A bridge to the native SDK's for iOS and Android.
+A bridge to the native Firebase SDK's for iOS and Android.
 
 iOS and Android SDK support offline mode's which the node / web SDK does not.
-There's also some other issues at the time of writing with the web SDK when
-used in React Native.
-
-Very much a WIP. API aims to match the Firebase Web API. Due to the fact that
-all communication between native and JS is async most functions return promises.
-
-For the time being exposed API will change without warning while main
-functionality is implemented.
 
 # Installation
 
-`npm install --save rn-firebase-bridge`
+```
+npm install --save rn-firebase-bridge
+react-native link
+```
 
 ## iOS
 
-In your Firebase console follow the instructions for adding iOS to your project.
+In [Firebase console](https://console.firebase.google.com/) follow the instructions for adding iOS to your project.
 
 Your Podfile should have at least:
 
@@ -32,12 +27,17 @@ Open the Xcode project, right click on `Libraries` and click `Add Files to
 "MyApp"`. Navigate to `node_modules/rn-firebase-bridge` and click the `ios`
 directory. You may wish to rename it to something more obvious (ie. `FirebaseBridge`).
 
-You will also need to create a Swift bridging header
+You will also need to create a Swift bridging header. To do this add a new header
+file to your project (eg. `yourapp-Bridging-Header.h`) and make sure it contains the following:
 
 ```
 #import "RCTBridge.h"
 #import "../node_modules/rn-firebase-bridge/ios/FirebaseBridge.h"
 ```
+
+Under your Build Settings set the `Objective-C Bridging Header` to the file your just created:
+
+![Bridging header](bridging-header.png)
 
 Also make sure your `Other linker flags` setting under `Build Settings` includes
 `$(inherited)`.
@@ -46,7 +46,45 @@ Also make sure your `Other linker flags` setting under `Build Settings` includes
 
 In your firebase console follow the instructions for adding Android to your project.
 
-Run `react-native link`.
+# Getting started
+
+Interfacing with the native SDK all happens asynchronously so the examples below
+will make extensive use of await and assumes the examples run within a function
+marked as async:
+
+```
+async componentDidMount() {
+  const user = firebase.auth().signInAnonymously();
+  this.setState({ user });
+}
+```
+
+To start with import firebase and get a reference to your default app:
+
+```
+import firebase from 'rn-firebase-bridge';
+
+// Get default app
+const app = firebase.initializeDefaultApp();
+
+// Or initialize another app with options
+const app = firebase.initializeApp(options);
+```
+
+From this you can access different services:
+
+```
+const database = app.database();
+const auth = app.auth();
+```
+
+Alternatively you can access the default app services directly:
+
+```
+// This is equivalent to calling the same functions on the default app
+const database = firebase.database();
+const auth = firebase.auth();
+```
 
 # API
 
@@ -54,44 +92,189 @@ Run `react-native link`.
 
 ### EventType
 
-One of 'value', 'child_added', 'child_removed', 'child_changed', 'child_moved'
+One of `value`, `child_added`, `child_removed`, `child_changed`, `child_moved`
+
+The events are fired for database `on` and `once` listeners.
 
 ### Priority
 
 string | number | null
 
-### User
+## Auth
+
+Get auth instance from your app:
 
 ```
-{
-    uid: string;
-    email: ?string;
-    displayName: ?string;
-    photoUrl: ?string;
-    anonymous: boolean;
+import firebase from 'rn-firebase-bridge';
+
+const app = firebase.initializeApp(options);
+const auth = app.auth();
+
+// Shortcut to get auth for default app
+
+const auth = firebase.auth();
+```
+
+### Possible error codes
+
+You can check the code on a error against the list below:
+
+```
+try {
+  await firebase.auth().signInWithEmail('test@example.com', 'wrong-password');
+catch (e) {
+  if (e.code === 'auth/weak-password') {
+    // ... to something
+  }
 }
 ```
 
-## Auth
+Android SDK provides a smaller number of known error codes.
+
+#### iOS / Android:
+
+```
+auth/weak-password
+auth/requires-recent-login
+auth/email-already-in-use
+auth/user-disabled
+auth/user-not-found
+auth/invalid-email
+auth/wrong-password
+```
+
+#### iOS
+
+```
+auth/app-not-authorized
+auth/credential-already-in-use
+auth/invalid-custom-token
+auth/custom-token-mismatch
+auth/email-already-in-use
+auth/invalid-api-key
+auth/invalid-credential
+auth/invalid-user-token
+auth/network-request-failed
+auth/account-exists-with-different-credential
+auth/too-many-requests
+auth/operation-not-allowed
+auth/user-token-expired
+auth/internal-error
+auth/user-mismatch
+auth/keychain-error
+auth/provider-already-linked
+auth/no-such-provider
+```
+
+### User
+
+Current user can be obtained from the auth instance:
+
+```
+const user = auth.currentUser;
+```
+
+You can also get passed a `User` instance if you register a `onAuthStateChanged` listener (see below).
+
+```
+auth.onAuthStateChanged(user => {
+  if (user) {
+    console.log(`User ${user.uid} is logged in`);
+  } else {
+    console.log('Not logged in');
+  }
+})
+```
+
+#### Properties
+
+```
+uid: string;
+email: ?string;
+emailVerified: boolean;
+providerId: string;
+displayName: ?string;
+photoUrl: ?string;
+isAnonymous: boolean;
+```
+
+#### Methods
+
+`delete() : Promise<void>`
+
+Deletes the user. Promise resolves with no value when completed.
+
+`getToken(forceRefresh = false) : Promise<string>`
+
+Fetch a token for a user, optionally forcing a refresh even if the token
+hasn't expired. Promise resolves the token.
+
+`link(credential) : Promise<User>`
+
+Link a credential to a user. Resolves with `User` instance on completion.
+
+`reauthenticate(credential) : Promise<void>`
+
+Re-authenticate user with a credential. Resolves with no value on completion.
+
+`reload() : Promise<void>`
+
+Reload user details. Resolves with no value on completion.
+
+`sendEmailVerification() : Promise<void>`
+
+Send a email verification to user. Resolves with no value on completion.
+
+`unlink(providerId:string) : Promise<void>`
+
+Unlink specified provider from user. Resolves with no value on completion.
+
+`updateEmail(newEmail:string) : Promise<void>`
+
+Update user email. Promise resolves with no value on completion.
+
+`updatePassword(newPassword:string) : Promise<void>`
+
+Update user password. Promise resolves with no value on completion.
+
+`updateProfile(profile:{|displayName?:string, photoURL?:string|}) : Promise<void>`
+
+Update user profile. Accepts an object with one, or both, of `displayName` and `photoURL`.
+Promise resolves with no value on completion.
 
 ### currentUser
 
-Current user, if any. Also accessible by calling `getCurrentUser()`.
+Current user, if any.
 
 ```
-import auth from 'rn-firebase-bridge/auth';
-
-console.log(auth.currentUser);
-console.log(auth.getCurrentUser())
+const user = firebase.auth().currentUser);
 ```
 
 ### createUserWithEmail(email:string, password:string) : Promise<User>
 
 ```
-auth.createUserWithEmail('test@example.com', 'pass1234').then(user => {
-    console.log(user.email, user.uuid);
-});
+async signUp(email, password) {
+  try {
+    const user = await auth.createUserWithEmailAndPassword(email, password);
+    user.sendEmailVerification();
+    this.setState({ user });
+  } catch (error) {
+    // error.code could be one of those specified below
+  }
+}
 ```
+
+Possible error codes:
+
+`auth/email-already-in-use`
+
+`auth/invalid-email`
+
+`auth/operation-not-allowed`
+
+Thrown if email/password accounts are not enabled. Enable email/password accounts in the Firebase Console, under the Auth tab.
+
+`auth/weak-password`
 
 ### signInWithEmail(email:string, password:string) : Promise<User>
 

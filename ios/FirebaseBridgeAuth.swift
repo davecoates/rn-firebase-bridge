@@ -66,7 +66,6 @@ func authErrorCodeToString(code:FIRAuthErrorCode) -> String {
     return "auth/requires-recent-login"
   case .ErrorCodeUserTokenExpired:
     return "auth/user-token-expired"
-    
   // These codes don't have equivalent in javascript API
   case .ErrorCodeInternalError:
     return "auth/internal-error"

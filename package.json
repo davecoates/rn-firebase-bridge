@@ -7,7 +7,7 @@
     "firebase",
     "firebase-bridge"
   ],
-  "main": "FirebaseBridge",
+  "main": "firebase",
   "license": "MIT",
   "maintainers": [
     {
