@@ -64,13 +64,13 @@ class App {
     }
 }
 
-async function initializeApp(options, name?:string) : types.App {
+function initializeApp(options, name?:string) : types.App {
     return new App(NativeFirebaseBridgeApp.initializeApp(options, name));
 }
 
 let defaultApp;
 
-async function initializeDefaultApp() : types.App {
+function initializeDefaultApp() : types.App {
     if (!defaultApp) {
         defaultApp = new App(NativeFirebaseBridgeApp.initializeDefaultApp());
     }
@@ -78,14 +78,14 @@ async function initializeDefaultApp() : types.App {
     return defaultApp;
 }
 
-async function database() : Database {
+function database() : Database {
     const app = initializeDefaultApp();
     return app.database();
 }
 
-async function auth() : Auth {
+function auth() : Auth {
     const app = initializeDefaultApp();
-    return app.database();
+    return app.auth();
 }
 auth.FacebookAuthProvider = Auth.FacebookAuthProvider;
 auth.GoogleAuthProvider = Auth.GoogleAuthProvider;
