@@ -247,19 +247,19 @@ Promise resolves with no value on completion.
 Current user, if any.
 
 ```
-const user = firebase.auth().currentUser);
+const user = firebase.auth().currentUser;
 ```
 
 ### createUserWithEmail(email:string, password:string) : Promise<User>
 
 ```
-async signUp(email, password) {
+async createUser(email, password) {
   try {
-    const user = await auth.createUserWithEmailAndPassword(email, password);
+    const user = await firebase.auth().createUserWithEmailAndPassword(email, password);
     user.sendEmailVerification();
     this.setState({ user });
   } catch (error) {
-    // error.code could be one of those specified below
+    // See below for potential values of error.code
   }
 }
 ```
@@ -279,86 +279,221 @@ Thrown if email/password accounts are not enabled. Enable email/password account
 ### signInWithEmail(email:string, password:string) : Promise<User>
 
 ```
-auth.signInWithEmail('test@example.com', 'pass1234').then(
-    user => console.log(user),
-    error => console.log(error)
-);
+async createUser(email, password) {
+  try {
+    const user = await firebase.auth().createUserWithEmailAndPassword(email, password);
+    user.sendEmailVerification();
+    this.setState({ user });
+  } catch (error) {
+    // See below for potential values of error.code
+  }
+}
 ```
 
-Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInWithEmailAndPassword)
+Possible error codes:
+
+`auth/invalid-email`
+
+`auth/user-disabled`
+
+`auth/user-not-found`
+
+`auth/wrong-password`
 
 ### signInWithCredential(credential:AuthCredential) : Promise<User>
 
-Create credential's using relevant provider (see below).
+Sign in with a credential. Create credential from one of the available providers:
+
+`firebase.auth.GithubAuthProvider`
+
+`firebase.auth.FacebookAuthProvider`
+
+`firebase.auth.TwitterAuthProvider`
+
+`firebase.auth.GoogleAuthProvider`
 
 ```
-auth.signInWithCredential(credential).then(
-    user => console.log(user),
-    error => console.log(error)
-);
+async signInWithGithub(token) {
+  const credential = firebase.auth.GithubAuthProvider.credential(token);
+  try {
+    await this.props.app.auth().signInWithCredential(credential);
+  } catch (error) {
+    // See below of potential values of error.code
+  }
+}
 ```
 
-Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInWithCredential)
+Potential error codes:
+
+`auth/account-exists-with-different-credential`
+
+`auth/operation-not-allowed`
+
+`auth/user-disabled`
+
+`auth/user-not-found`
+
+`auth/wrong-password`
 
 ### signInAnonymously() : Promise<User>
 
 ```
-auth.signInAnonymously().then(
-    user => console.log(user),
-    error => console.log(error)
-);
+async signInAnonymously() {
+  try {
+    const user = await firebase.auth().signInAnonymously();
+    this.setState({ user });
+  } catch (error) {
+    // See below for potential values of error.code
+  }
+}
 ```
 
-Error code will match one of the values described [here](https://firebase.google.com/docs/reference/js/firebase.auth.Auth#signInAnonymously)
+Potential error codes:
+
+`auth/operation-not-allowed`
+
+Thrown if anonymous accounts are not enabled. Enable anonymous accounts in the Firebase Console, under the Auth tab.
 
 ### signOut() : Promise<null>
 
 Sign user out.
 
 ```
-auth.signOut().then(() => console.log('log out complete'));
+async signOut() {
+  await firebase.auth().signOut();
+  console.log('User has been signed out');
+}
 ```
 
-### onAuthStateChanged(callback:({user:User}) -> void)
+### onAuthStateChanged(callback:(User:?user) -> void)
+
+Add a listener on auth state changes. If user is logged in parameter to callback
+will be a `User` instance, otherwise null.
 
 ```
-auth.onAuthStateChanged(user => {
-    console.log(user);
+firebase.auth().onAuthStateChanged(user => {
+  if (user) {
+    console.log(`User ${user.uid} is logged in`);
+  } else {
+    console.log('Not logged in');
+  }
 });
 ```
 
 ### FacebookAuthProvider
 
+Sign in using Facebook. You must get the token using the Facebook SDK.
+
 ```
-// Get token using Facebook SDK
-const credential = auth.FacebookAuthProvider.credential(token);
-auth.signInWithCredential(credential);
+async signInWithFacebook(token) {
+  try {
+    const credential = firebase.auth.FacebookAuthProvider.credential(token);
+    const user = firebase.auth().signInWithCredential(credential);
+    this.setState({ user });
+  } catch (e) {
+    // See signInWithCredential above for possible error codes
+  }
+}
 ```
 
 ### TwitterAuthProvider
 
+Sign in using Twitter.
+
 ```
-const credential = auth.FacebookAuthProvider.credential(token, secret);
-auth.signInWithCredential(credential);
+async signInWithTwitter(token, secret) {
+  try {
+    const credential = firebase.auth.TwitterAuthProvider.credential(token, secret);
+    const user = firebase.auth().signInWithCredential(credential);
+    this.setState({ user });
+  } catch (e) {
+    // See signInWithCredential above for possible error codes
+  }
+}
 ```
 
 ### GithubAuthProvider
 
-```
-import { GithubAuthProvider, signInWithCredential } from 'rn-firebase-bridge/auth';
+Sign in using Github.
 
-const credential = GithubAuthProvider.credential(token);
-signInWithCredential(credential);
+```
+async signInWithGithub(token) {
+  try {
+    const credential = firebase.auth.GithubAuthProvider.credential(token);
+    const user = firebase.auth().signInWithCredential(credential);
+    this.setState({ user });
+  } catch (e) {
+    // See signInWithCredential above for possible error codes
+  }
+}
 ```
 
 ### GoogleAuthProvider
 
+Sign in using Google.
+
 ```
-const credential = auth.GoogleAuthProvider.credential(idToken, accessToken);
-auth.signInWithCredential(credential);
+async signInWithGoogle(idToken, accessToken) {
+  try {
+    const credential = firebase.auth.GoogleAuthProvider.credential(idToken, accessToken);
+    const user = firebase.auth().signInWithCredential(credential);
+    this.setState({ user });
+  } catch (e) {
+    // See signInWithCredential above for possible error codes
+  }
+}
 ```
 
 ## Database
+
+### Database class
+
+```
+import firebase from 'firebase';
+
+// Get instance
+const database = firebase.database();
+
+// Access static methods
+firebase.database.sdkVersion()
+firebase.database.enableLogging(true);
+```
+
+#### Properties:
+
+`ServerValue` - TODO: not yet implemented
+
+Static methods:
+
+`enableLogging(enabled:boolean)`
+
+Enable / disable logging.
+
+`sdkVersion()`
+
+Get version of SDK.
+
+Methods:
+
+`goOnline()`
+
+(Re)connect to the server and synchronize the offline database state with the server state.
+
+`goOffline()`
+
+Disconnect from the server.
+
+`setPersistenceEnabled(enabled:boolean)`
+
+Set true to enable disk persistence, set false to disable it.
+
+`ref(path?:string) : DatabaseReference`
+
+Return a reference to the root or the specified path
+
+`refFromURL(url) : DatabaseReference`
+
+Return a reference to the root or the path specified in the URL.
 
 ### Query
 
@@ -401,9 +536,9 @@ Resolves to full URL for this location.
 Extends `Query`.
 
 ```
-import Database from 'rn-firebase-bridge/database';
+import firebase from 'rn-firebase-bridge';
 
-const ref = Database.ref();
+const ref = firebase.database().ref();
 ```
 
 #### child(path:string) : DatabaseReference
@@ -411,9 +546,9 @@ const ref = Database.ref();
 Create a child at specified path. Can be chained.
 
 ```
-import Database from 'rn-firebase-bridge/database';
+import firebase from 'rn-firebase-bridge';
 
-const item = Database.reference().child('shop').child('packages').push().child('items').push();
+const item = firebase.database().ref().child('shop').child('packages').push().child('items').push();
 ```
 
 #### push() : DatabaseReference
@@ -421,12 +556,19 @@ const item = Database.reference().child('shop').child('packages').push().child('
 Push a new item onto a list.
 
 #### setValue(value:any) : Promise
+
 Set value and return a promise that resolves when complete. Will reject on failure.
+
 #### setValueWithPriority(value:any, priority:Priority) : Promise
+
 As above but set value with priority.
+
 #### remove() : Promise
+
 Remove value with a promise that resolves on completion.
+
 #### setPriority(priority:Priority) : Promise
+
 Set priority and return a promise that resolves when complete. Will reject on failure.
 
 ### DataSnapshot
