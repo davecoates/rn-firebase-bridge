@@ -279,9 +279,9 @@ Thrown if email/password accounts are not enabled. Enable email/password account
 ### signInWithEmail(email:string, password:string) : Promise<User>
 
 ```
-async createUser(email, password) {
+async signInWithEmail(email, password) {
   try {
-    const user = await firebase.auth().createUserWithEmailAndPassword(email, password);
+    const user = await firebase.auth().signInWithEmail(email, password);
     user.sendEmailVerification();
     this.setState({ user });
   } catch (error) {

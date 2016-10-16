@@ -105,7 +105,7 @@ export class DataSnapshot {
                         continue;
                     }
                     const result = await wrapCb(child);
-                    // Boolean false indicates we should stop iterating now.
+                    // Boolean true indicates we should stop iterating now.
                     // Flag for termination but continue iterating to release remaining snapshots.
                     if (result === true) {
                         terminated = true;
