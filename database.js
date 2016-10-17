@@ -225,6 +225,7 @@ export class Query {
                 };
                 eventListenersById[uniqueEventName] = { listener, cancelCallback };
                 return () => {
+                    NativeFirebaseBridgeDatabase.off(uniqueEventName);
                     delete eventListenersById[uniqueEventName];
                 };
             }, error => {

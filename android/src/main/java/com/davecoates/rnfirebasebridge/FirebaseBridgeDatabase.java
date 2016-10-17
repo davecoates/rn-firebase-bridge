@@ -246,12 +246,24 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
         });
     }
 
-    private void sendEvent(String eventName,
-                         @Nullable WritableMap params) {
+    private void sendSnapshotEvent(String id, DataSnapshot snapshot) {
+        WritableMap params = Arguments.createMap();
+        params.putMap("snapshot", convertSnapshot(snapshot));
+        params.putString("id", id);
         ReactContext reactContext = getReactApplicationContext();
         reactContext
                 .getJSModule(RCTNativeAppEventEmitter.class)
-                .emit(eventName, params);
+                .emit("databaseOn", params);
+    }
+
+    private void sendSnapshotEvent(String id, DatabaseError error) {
+        WritableMap params = Arguments.createMap();
+        params.putString("error", error.getMessage());
+        params.putString("id", id);
+        ReactContext reactContext = getReactApplicationContext();
+        reactContext
+                .getJSModule(RCTNativeAppEventEmitter.class)
+                .emit("databaseOn", params);
     }
 
     private WritableArray convertSnapshotList(Iterable<DataSnapshot> values) {
@@ -582,11 +594,12 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                 ValueEventListener listener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                        sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+                        sendSnapshotEvent(uniqueEventName.toString(), databaseError);
                     }
                 };
                 listenersByUUID.put(uniqueEventName.toString(), new DatabaseReferenceListenerPair(ref, listener));
@@ -601,34 +614,34 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_added")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                         }
                     }
 
                     @Override
                     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_changed")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                         }
                     }
 
                     @Override
                     public void onChildRemoved(DataSnapshot dataSnapshot) {
                         if (eventType.equals("child_removed")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                         }
                     }
 
                     @Override
                     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_moved")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                         }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                        sendSnapshotEvent(uniqueEventName.toString(), databaseError);
                     }
                 };
                 listenersByUUID.put(uniqueEventName.toString(), new DatabaseReferenceListenerPair(ref, childListener));
@@ -661,11 +674,12 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                 ValueEventListener listener = new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot dataSnapshot) {
-                        sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                        sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+                        sendSnapshotEvent(uniqueEventName.toString(), databaseError);
                     }
                 };
                 new DatabaseReferenceListenerPair(ref, listener);
@@ -682,7 +696,7 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                     @Override
                     public void onChildAdded(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_added")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                             ref.removeEventListener(this);
                         }
                     }
@@ -690,7 +704,7 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                     @Override
                     public void onChildChanged(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_changed")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                             ref.removeEventListener(this);
                         }
                     }
@@ -698,7 +712,7 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                     @Override
                     public void onChildRemoved(DataSnapshot dataSnapshot) {
                         if (eventType.equals("child_removed")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                             ref.removeEventListener(this);
                         }
                     }
@@ -706,13 +720,14 @@ public class FirebaseBridgeDatabase extends ReactContextBaseJavaModule {
                     @Override
                     public void onChildMoved(DataSnapshot dataSnapshot, String s) {
                         if (eventType.equals("child_moved")) {
-                            sendEvent(uniqueEventName.toString(), convertSnapshot(dataSnapshot));
+                            sendSnapshotEvent(uniqueEventName.toString(), dataSnapshot);
                             ref.removeEventListener(this);
                         }
                     }
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
+                        sendSnapshotEvent(uniqueEventName.toString(), databaseError);
                         ref.removeEventListener(this);
                     }
                 };
