@@ -26,8 +26,9 @@ func appToDict(app:FIRApp) -> Dictionary<String, AnyObject> {
 @objc(FirebaseBridgeApp)
 class FirebaseBridgeApp: NSObject, RCTInvalidating {
   
-  func invalidate() {
-    print("invalidate")
+  func invalidate() {  
+    /*
+    // We don't want to do this; loses auth state etc
     if let apps = FIRApp.allApps() {
       for app in apps {
         (app.1 as! FIRApp).deleteApp({ (success) in
@@ -37,9 +38,16 @@ class FirebaseBridgeApp: NSObject, RCTInvalidating {
         })
       }
     }
+    */
   }
   
   @objc func initializeApp(options:NSObject, name:String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    
+    if let app = FIRApp(named: name ?? "__FIRAPP_DEFAULT") {
+      resolve(appToDict(app));
+      return
+    }
+    
     let fbOptions = FIROptions.init(
       googleAppID: options.valueForKey("googleAppID") as? String,
       bundleID: options.valueForKey("bundleID") as? String,
@@ -68,8 +76,14 @@ class FirebaseBridgeApp: NSObject, RCTInvalidating {
     }
   }
   
+  
   @objc func initializeDefaultApp(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
   {
+    if let app = FIRApp(named:"__FIRAPP_DEFAULT") {
+      resolve(appToDict(app));
+      return
+    }
+    
     FIRApp.configure();
     if let app = FIRApp.defaultApp() {
       resolve(appToDict(app));

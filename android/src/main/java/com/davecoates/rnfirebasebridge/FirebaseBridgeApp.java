@@ -35,8 +35,13 @@ public class FirebaseBridgeApp extends ReactContextBaseJavaModule {
     @ReactMethod
     public void initializeDefaultApp(Promise promise)
     {
-        FirebaseApp app = FirebaseApp.initializeApp(
-                this.getReactApplicationContext());
+        FirebaseApp app;
+        try {
+            app = FirebaseApp.initializeApp(
+                    this.getReactApplicationContext());
+        } catch (IllegalStateException ise) {
+            app = FirebaseApp.getInstance();
+        }
         if (app == null) {
             promise.reject("app_not_found", "App not found. Have you added google-sevices.json to your app?");
         } else {
