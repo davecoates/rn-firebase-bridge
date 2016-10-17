@@ -3,15 +3,13 @@ import suite from './test';
 export default function makeSuite(app) {
     const database = app.database();
     const auth = app.auth();
-    const base = String(Math.random()).split('.')[1];
+    const base = 'test';
     return suite(async (test) => {
         test('Keys and refs', async (t) => {
             await app.ready();
             const dbUrl = app.options.databaseURL;
             t.is(database.ref(base).key(), base);
             t.is(database.ref(base).toString(), `${dbUrl}/${base}`);
-            t.is(database.ref().key(), '');
-            t.is(database.ref().toString(), dbUrl);
             t.is(database.ref(base).root().toString(), dbUrl);
             t.is(database.ref().child('test').toString(), `${dbUrl}/test`);
             const url = `${dbUrl}/level1/level2`;
@@ -19,11 +17,12 @@ export default function makeSuite(app) {
         });
 
         test('on child_added', async (t) => {
+            t.plan(6);
             if (!auth.currentUser) {
                 await auth.signInAnonymously();
             }
             const now = new Date();
-            const ref = database.ref().child(now.getTime().toString());
+            const ref = database.ref('test').child(now.getTime().toString());
             const value = now.toString();
             const childAddedPromise = t.wait('child_added', resolve => {
                 let called = 0;
@@ -59,10 +58,11 @@ export default function makeSuite(app) {
         });
 
         test('on value', async (t) => {
+            t.plan(20);
             if (!auth.currentUser) {
                 await auth.signInAnonymously();
             }
-            const ref = database.ref().child(Math.random().toString().split('.')[1]);
+            const ref = database.ref('test').child(Math.random().toString().split('.')[1]);
             const value = Math.random().toString();
             const value2 = Math.random().toString();
             const value3 = Math.random().toString();
@@ -70,7 +70,6 @@ export default function makeSuite(app) {
                 let called = 0;
                 const unsub = ref.on('value', async (snapshot) => {
                     called++;
-                    console.log(called, '!!!')
                     t.is(called <= 3, true, 'Call count');
                     const v = await snapshot.val();
                     t.is(typeof v, 'object');
@@ -106,10 +105,11 @@ export default function makeSuite(app) {
 
 
         test('limitToFirst/Last, start/endAt', async (t) => {
+            t.plan(25);
             if (!auth.currentUser) {
                 await auth.signInAnonymously();
             }
-            const ref = database.ref().child(Math.random().toString().split('.')[1]);
+            const ref = database.ref('test').child(Math.random().toString().split('.')[1]);
             const value = [1, 2, 3, 4, 5, 6];
             await ref.setValue(value);
             await t.wait('wait on limitToFirst', resolve => {
@@ -180,6 +180,25 @@ export default function makeSuite(app) {
                         count++;
                     });
                     t.is(count, index + 1);
+                    resolve();
+                });
+            });
+        });
+        test('should get perm denied', async (t) => {
+            t.plan(2);
+            await new Promise((resolve, reject) => {
+                database.ref('should_not_have_access').on('value', () => {
+                    reject('Should not have access; expected permission denied');
+                }, error => {
+                    t.truthy(error.message.match('Permission'));
+                    resolve();
+                });
+            });
+            await new Promise((resolve, reject) => {
+                database.ref('should_not_have_access').once('value', () => {
+                    reject('Should not have access; expected permission denied');
+                }, error => {
+                    t.truthy(error.message.match('Permission'));
                     resolve();
                 });
             });

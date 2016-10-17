@@ -17,6 +17,10 @@ const styles = StyleSheet.create({
     error: {
         color: 'red',
     },
+    noError: {
+        color: 'gray',
+        opacity: 0.5,
+    },
     button: {
         borderWidth: 1,
         borderRadius: 5,
@@ -70,12 +74,11 @@ export default class TestSuite extends Component {
         return (
             <View style={styles.suite}>
                 {results.map(({ errors, passed }, i) =>
-                    <Text key={i} style={[
-                        errors.length ? styles.error : styles.success,
-                        styles.result,
-                    ]}>
+                    <Text key={i} style={styles.result}>
                         <Text style={styles.success}>✓ {passed}</Text>
-                        ✘ {errors.length}
+                        <Text style={errors.length ? styles.error : styles.noError}>
+                            ✘ {errors.length}
+                        </Text>
                     </Text>
                 )}
             </View>

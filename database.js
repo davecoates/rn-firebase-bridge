@@ -1,5 +1,5 @@
 // @flow
-import { NativeModules, NativeAppEventEmitter } from 'react-native';
+import { NativeModules, NativeEventEmitter } from 'react-native';
 import invariant from 'invariant';
 import type {
     EventType,
@@ -116,6 +116,21 @@ export class DataSnapshot {
 
 }
 
+const eventListenersById = {};
+const databaseEmitter = new NativeEventEmitter(NativeFirebaseBridgeDatabase);
+databaseEmitter.addListener('databaseOn', data => {
+    const { id, snapshot, error } = data;
+    if (eventListenersById[id]) {
+        const { listener, cancelCallback } = eventListenersById[id];
+        if (!error) {
+            listener(snapshot);
+        } else {
+            if (cancelCallback) {
+                cancelCallback(new Error(error));
+            }
+        }
+    }
+});
 
 export class Query {
 
@@ -169,7 +184,10 @@ export class Query {
      * Subscribe to an event.
      * @return {Function} a function that will unsubscribe from this event
      */
-    on(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise<void>)) : () => void {
+    on(eventType:EventType,
+       cb:((snapshot:DataSnapshotType) => Promise<void>),
+       cancelCallback:((error:Error) => void) = null
+   ) : () => void {
         const p = this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.on(
                 this.app.name, locationUrl, eventType, this.query))
@@ -205,18 +223,24 @@ export class Query {
                         });
                     }
                 };
-                const subscription = NativeAppEventEmitter.addListener(uniqueEventName, listener);
+                eventListenersById[uniqueEventName] = { listener, cancelCallback };
                 return () => {
-                    subscription.remove();
-                    NativeFirebaseBridgeDatabase.off(uniqueEventName);
+                    delete eventListenersById[uniqueEventName];
                 };
+            }, error => {
+                if (cancelCallback) {
+                    cancelCallback(error);
+                }
             });
         return () => {
             p.then(unsubscribe => unsubscribe());
         };
     }
 
-    once(eventType:EventType, cb:((snapshot:DataSnapshotType) => Promise<void>)) : () => void {
+    once(eventType:EventType,
+         cb:((snapshot:DataSnapshotType) => Promise<void>),
+         cancelCallback:((error:Error) => void) = null
+     ) : () => void {
         const p = this.parentPromise.then(
             ({ locationUrl }) => NativeFirebaseBridgeDatabase.once(
                 this.app.name, locationUrl, eventType, this.query))
@@ -252,10 +276,9 @@ export class Query {
                         });
                     }
                 };
-                const subscription = NativeAppEventEmitter.addListener(uniqueEventName, listener);
+                eventListenersById[uniqueEventName] = { listener, cancelCallback };
                 return () => {
-                    subscription.remove();
-                    // NativeFirebaseBridgeDatabase.off(uniqueEventName);
+                    delete eventListenersById[uniqueEventName];
                 };
             });
         return () => {

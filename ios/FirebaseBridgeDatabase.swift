@@ -26,9 +26,7 @@ let jsEventTypeMapping = [
 
 
 @objc(FirebaseBridgeDatabase)
-class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
-  
-  var bridge: RCTBridge!
+class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   
   func invalidate() {
     self.databaseEventHandles.forEach { (_, pair) in
@@ -154,6 +152,10 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
     return ref;
   }
   
+  override func supportedEvents() -> [String]! {
+    return ["databaseOn"]
+  }
+  
   
   // Setup event subscription. eventTypeString should match one of JsDataEventType.
   // Can't use @objc with string enums so we manually init it below.
@@ -165,8 +167,15 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
         let uniqueEventName = NSUUID.init()
         resolve(uniqueEventName.UUIDString)
         ref.observeSingleEventOfType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
-          self.bridge.eventDispatcher().sendAppEventWithName(
-            uniqueEventName.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
+          self.sendEventWithName("databaseOn", body: [
+            "id": uniqueEventName.UUIDString,
+            "snapshot": self.cacheSnapshotAndConvert(snapshot),
+          ])
+        }, withCancelBlock: { error in
+          self.sendEventWithName("databaseOn", body: [
+            "id": uniqueEventName.UUIDString,
+            "error": error.localizedDescription,
+            ]);
         })
       } else {
         reject("unknown_event", "Unknown event type provided \(eventTypeString)", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
@@ -190,9 +199,18 @@ class FirebaseBridgeDatabase: NSObject, RCTInvalidating {
         let uniqueEventName = NSUUID.init()
         resolve(uniqueEventName.UUIDString)
         let handle = ref.observeEventType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
-          self.bridge.eventDispatcher().sendAppEventWithName(
-            uniqueEventName.UUIDString, body: self.cacheSnapshotAndConvert(snapshot))
-        })
+          self.sendEventWithName("databaseOn", body: [
+            "id": uniqueEventName.UUIDString,
+            "snapshot": self.cacheSnapshotAndConvert(snapshot),
+            ]
+          )
+          }, withCancelBlock: { error in
+            self.sendEventWithName("databaseOn", body: [
+              "id": uniqueEventName.UUIDString,
+              "error": error.localizedDescription,
+              ]);
+          }
+        )
         
         self.databaseEventHandles[uniqueEventName.UUIDString] = (ref, handle)
       } else {

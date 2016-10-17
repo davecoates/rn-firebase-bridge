@@ -20,7 +20,9 @@ async function test(label, fn) {
     const formatLabel = label => label ? `${label}: ` : '';
     const defaultMessage = (a, b, label = '') =>
         `${formatLabel(label)}${prettyFormat(a)} != ${prettyFormat(b)}`;
+    let plannedAmount = null;
     const t = {
+        plan: (count) => plannedAmount = count,
         truthy: buildComparator(a => !!a, (a, label) => `${formatLabel(label)}${a} is not truthy`),
         falsy: buildComparator(
             a => !a,
@@ -48,6 +50,10 @@ async function test(label, fn) {
                 15000
             )),
         ]);
+        const assertionCount = passed + errors.length;
+        if (plannedAmount !== null && plannedAmount !== (assertionCount)) {
+            errors.push(`Planned for ${plannedAmount} assertions; received ${assertionCount}`);
+        }
         await Promise.race([
             Promise.all(promises),
             new Promise((_, reject) => setTimeout(
