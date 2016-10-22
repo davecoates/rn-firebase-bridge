@@ -1,3 +1,8 @@
+### Release 0.1.1
+
+  * Handle permission errors on on/once callbacks (#25)
+  * Don't lose cached credentials on restart (#24)
+
 ### Release 0.1.0
 
   * Support multiple apps.
