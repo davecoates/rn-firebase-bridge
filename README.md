@@ -122,9 +122,9 @@ You can check the code on a error against the list below:
 ```
 try {
   await firebase.auth().signInWithEmail('test@example.com', 'wrong-password');
-catch (e) {
+} catch (e) {
   if (e.code === 'auth/weak-password') {
-    // ... to something
+    // ... do something
   }
 }
 ```
