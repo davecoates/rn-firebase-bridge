@@ -516,7 +516,7 @@ Because of async/await this isn't too onerous:
 ```
 ref.on('value', async (snapshot) => {
     await snapshot.forEach(async (child) => {
-        console.log('Child value:', async child.val());
+        console.log('Child value:', await child.val());
     })
     console.log('Value is': await snapshot.val());
 });
