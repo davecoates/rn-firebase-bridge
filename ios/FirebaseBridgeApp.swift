@@ -5,9 +5,9 @@
 
 import Firebase
 
-func appToDict(app:FIRApp) -> Dictionary<String, AnyObject> {
+func appToDict(_ app:FIRApp) -> Dictionary<String, AnyObject> {
   let options = app.options
-  let optionsDict = options.dictionaryWithValuesForKeys([
+  let optionsDict = options.dictionaryWithValues(forKeys: [
     "androidClientID",
     "APIKey",
     "databaseURL",
@@ -16,8 +16,8 @@ func appToDict(app:FIRApp) -> Dictionary<String, AnyObject> {
     "storageBucket",
     ])
   let data:Dictionary<String, AnyObject> = [
-    "name": app.name,
-    "options" : optionsDict,
+    "name": app.name as AnyObject,
+    "options" : optionsDict as AnyObject,
   ]
   
   return data
@@ -41,7 +41,7 @@ class FirebaseBridgeApp: NSObject, RCTInvalidating {
     */
   }
   
-  @objc func initializeApp(options:NSObject, name:String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func initializeApp(_ options:NSObject, name:String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     
     if let app = FIRApp(named: name ?? "__FIRAPP_DEFAULT") {
       resolve(appToDict(app));
@@ -49,24 +49,24 @@ class FirebaseBridgeApp: NSObject, RCTInvalidating {
     }
     
     let fbOptions = FIROptions.init(
-      googleAppID: options.valueForKey("googleAppID") as? String,
-      bundleID: options.valueForKey("bundleID") as? String,
-      GCMSenderID: options.valueForKey("GCMSenderID") as? String,
-      APIKey: options.valueForKey("APIKey") as? String,
-      clientID: options.valueForKey("clientID") as? String,
-      trackingID: options.valueForKey("trackingID") as? String,
-      androidClientID: options.valueForKey("androidClientID") as? String,
-      databaseURL: options.valueForKey("databaseURL") as? String,
-      storageBucket: options.valueForKey("storageBucket") as? String,
-      deepLinkURLScheme: options.valueForKey("deepLinkURLScheme") as? String
+      googleAppID: options.value(forKey: "googleAppID") as? String,
+      bundleID: options.value(forKey: "bundleID") as? String,
+      gcmSenderID: options.value(forKey: "GCMSenderID") as? String,
+      apiKey: options.value(forKey: "APIKey") as? String,
+      clientID: options.value(forKey: "clientID") as? String,
+      trackingID: options.value(forKey: "trackingID") as? String,
+      androidClientID: options.value(forKey: "androidClientID") as? String,
+      databaseURL: options.value(forKey: "databaseURL") as? String,
+      storageBucket: options.value(forKey: "storageBucket") as? String,
+      deepLinkURLScheme: options.value(forKey: "deepLinkURLScheme") as? String
     )
     var app:FIRApp?;
-    if let name = name where name != "" {
-      FIRApp.configureWithName(name, options: fbOptions)
+    if let name = name, name != "" {
+      FIRApp.configure(withName: name, options: fbOptions!)
       app = FIRApp(named: name)
     } else {
       //FIRApp.configure()
-      FIRApp.configureWithOptions(fbOptions)
+      FIRApp.configure(with: fbOptions!)
       app = FIRApp.defaultApp()
     }
     if let app = app {
@@ -77,7 +77,7 @@ class FirebaseBridgeApp: NSObject, RCTInvalidating {
   }
   
   
-  @objc func initializeDefaultApp(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func initializeDefaultApp(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
   {
     if let app = FIRApp(named:"__FIRAPP_DEFAULT") {
       resolve(appToDict(app));

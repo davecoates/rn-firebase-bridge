@@ -10,19 +10,19 @@ import Firebase
 
 class FirebaseBridgeCredentialCache {
   
-  static let credentialCache = NSCache()
+  static let credentialCache = NSCache<AnyObject, AnyObject>()
   
-  static func addCredential(credential:FIRAuthCredential) -> String {
-    let credentialUUID = NSUUID.init()
-    self.credentialCache.setObject(credential, forKey: credentialUUID.UUIDString)
-    return credentialUUID.UUIDString
+  static func addCredential(_ credential:FIRAuthCredential) -> String {
+    let credentialUUID = UUID.init()
+    self.credentialCache.setObject(credential, forKey: credentialUUID.uuidString as AnyObject)
+    return credentialUUID.uuidString
   }
   
-  static func getCredential(id:String) throws -> FIRAuthCredential {
-    if let credential = credentialCache.objectForKey(id) as? FIRAuthCredential {
+  static func getCredential(_ id:String) throws -> FIRAuthCredential {
+    if let credential = credentialCache.object(forKey: id as AnyObject) as? FIRAuthCredential {
       return credential
     }
-    throw FirebaseBridgeError.CredentialNotFound()
+    throw FirebaseBridgeError.credentialNotFound()
   }
   
 }

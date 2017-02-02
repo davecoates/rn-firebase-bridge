@@ -15,8 +15,8 @@ class FirebaseBridgeGoogleAuthProvider : NSObject {
     super.init()
   }
   
-  @objc func credential(idToken:String, accessToken:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let credential = FIRGoogleAuthProvider.credentialWithIDToken(idToken, accessToken: accessToken)
+  @objc func credential(_ idToken:String, accessToken:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    let credential = FIRGoogleAuthProvider.credential(withIDToken: idToken, accessToken: accessToken)
     resolve([
       "id": FirebaseBridgeCredentialCache.addCredential(credential),
       "provider": credential.provider,

@@ -10,17 +10,17 @@ import Firebase
 @objc(FirebaseBridgeUser)
 class FirebaseBridgeUser : NSObject {
   
-  func getUser(appName:String) throws -> FIRUser {
+  func getUser(_ appName:String) throws -> FIRUser {
      if let app = FIRApp(named: appName) {
       if let user = FIRAuth(app:app)?.currentUser {
         return user
       }
-      throw FirebaseBridgeError.UserNotLoggedIn()
+      throw FirebaseBridgeError.userNotLoggedIn()
     }
-    throw FirebaseBridgeError.AppNotFound(appName: appName)
+    throw FirebaseBridgeError.appNotFound(appName: appName)
   }
   
-  private func reject(reject: RCTPromiseRejectBlock, error: NSError) {
+  fileprivate func reject(_ reject: RCTPromiseRejectBlock, error: NSError) {
     var code = ""
     if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
       code = authErrorCodeToString(errorCode)
@@ -30,12 +30,12 @@ class FirebaseBridgeUser : NSObject {
     reject(code, error.localizedDescription,  NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
   }
   
-  @objc func sendEmailVerification(appName:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func sendEmailVerification(_ appName:String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
-      try self.getUser(appName).sendEmailVerificationWithCompletion{ (error) in
+      try self.getUser(appName).sendEmailVerification{ (error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(nil)
@@ -49,12 +49,12 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func delete(appName:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func delete(_ appName:String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
-      try self.getUser(appName).deleteWithCompletion{ (error) in
+      try self.getUser(appName).delete{ (error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(nil)
@@ -68,12 +68,12 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func getToken(appName:String, forceRefresh:Bool, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func getToken(_ appName:String, forceRefresh:Bool, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
       try self.getUser(appName).getTokenForcingRefresh(forceRefresh, completion: { (token, error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(token)
@@ -87,13 +87,13 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func link(appName:String, credentialId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func link(_ appName:String, credentialId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
       let credential = try FirebaseBridgeCredentialCache.getCredential(credentialId)
-      try self.getUser(appName).linkWithCredential(credential, completion: { (user, error) in
+      try self.getUser(appName).link(with: credential, completion: { (user, error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(userToDict(user!))
@@ -107,13 +107,13 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func reauthenticate(appName:String, credentialId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func reauthenticate(_ appName:String, credentialId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
       let credential = try FirebaseBridgeCredentialCache.getCredential(credentialId)
-      try self.getUser(appName).reauthenticateWithCredential(credential, completion: { (error) in
+      try self.getUser(appName).reauthenticate(with: credential, completion: { (error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(nil)
@@ -127,12 +127,12 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func reload(appName:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func reload(_ appName:String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
-      try self.getUser(appName).reloadWithCompletion() { (error) in
+      try self.getUser(appName).reload() { (error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(nil)
@@ -146,12 +146,12 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func unlink(appName:String, providerId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func unlink(_ appName:String, providerId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
-      try self.getUser(appName).unlinkFromProvider(providerId, completion: { (user, error) in
+      try self.getUser(appName).unlink(fromProvider: providerId, completion: { (user, error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(userToDict(user!))
@@ -165,12 +165,12 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func updateEmail(appName:String, newEmail: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func updateEmail(_ appName:String, newEmail: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
       try self.getUser(appName).updateEmail(newEmail, completion: { (error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(nil)
@@ -184,12 +184,12 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func updatePassword(appName:String, newPassword: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func updatePassword(_ appName:String, newPassword: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
       try self.getUser(appName).updatePassword(newPassword, completion: { (error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(nil)
@@ -203,7 +203,7 @@ class FirebaseBridgeUser : NSObject {
     }
   }
   
-  @objc func updateProfile(appName:String, profile: [AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock)
+  @objc func updateProfile(_ appName:String, profile: [AnyObject], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
       let data = profile[0] as! Dictionary<String, AnyObject>
@@ -213,11 +213,11 @@ class FirebaseBridgeUser : NSObject {
         changeRequest.displayName = displayName as? String
       }
       if let photoURL = data["photoURL"] {
-        changeRequest.photoURL = NSURL(string: photoURL as! String)
+        changeRequest.photoURL = URL(string: photoURL as! String)
       }
-      changeRequest.commitChangesWithCompletion() { (error) in
+      changeRequest.commitChanges() { (error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         // TODO: Should we resolve with updated user? User change doesn't

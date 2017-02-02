@@ -15,8 +15,8 @@ class FirebaseBridgeTwitterAuthProvider : NSObject {
     super.init()
   }
   
-  @objc func credential(token:String, secret:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let credential = FIRTwitterAuthProvider.credentialWithToken(token, secret: secret)
+  @objc func credential(_ token:String, secret:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    let credential = FIRTwitterAuthProvider.credential(withToken: token, secret: secret)
     resolve([
       "id": FirebaseBridgeCredentialCache.addCredential(credential),
       "provider": credential.provider,

@@ -15,9 +15,9 @@ class FirebaseBridgeGithubAuthProvider : NSObject {
     super.init()
   }
   
-  @objc func credential(token:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func credential(_ token:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     print(token)
-    let credential = FIRGitHubAuthProvider.credentialWithToken(token)
+    let credential = FIRGitHubAuthProvider.credential(withToken: token)
     resolve([
       "id": FirebaseBridgeCredentialCache.addCredential(credential),
       "provider": credential.provider,

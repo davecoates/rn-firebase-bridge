@@ -17,11 +17,11 @@ enum JsDataEventType : String {
 
 // Map the above to FIRDataEventType's
 let jsEventTypeMapping = [
-  JsDataEventType.Value: FIRDataEventType.Value,
-  JsDataEventType.ChildAdded: FIRDataEventType.ChildAdded,
-  JsDataEventType.ChildRemoved: FIRDataEventType.ChildRemoved,
-  JsDataEventType.ChildChanged: FIRDataEventType.ChildChanged,
-  JsDataEventType.ChildMoved: FIRDataEventType.ChildMoved,
+  JsDataEventType.Value: FIRDataEventType.value,
+  JsDataEventType.ChildAdded: FIRDataEventType.childAdded,
+  JsDataEventType.ChildRemoved: FIRDataEventType.childRemoved,
+  JsDataEventType.ChildChanged: FIRDataEventType.childChanged,
+  JsDataEventType.ChildMoved: FIRDataEventType.childMoved,
 ];
 
 
@@ -30,75 +30,75 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   
   func invalidate() {
     self.databaseEventHandles.forEach { (_, pair) in
-      pair.0.removeObserverWithHandle(pair.1)
+      pair.0.removeObserver(withHandle: pair.1)
     }
   }
   
-  let snapshotCache = NSCache()
+  let snapshotCache = NSCache<AnyObject, AnyObject>()
   
-  func cacheSnapshotAndConvert(snapshot:FIRDataSnapshot) -> Dictionary<String, AnyObject> {
-    let snapshotUUID = NSUUID.init()
-    self.snapshotCache.setObject(snapshot, forKey: snapshotUUID.UUIDString)
+  func cacheSnapshotAndConvert(_ snapshot:FIRDataSnapshot) -> Dictionary<String, AnyObject> {
+    let snapshotUUID = UUID.init()
+    self.snapshotCache.setObject(snapshot, forKey: snapshotUUID.uuidString as AnyObject)
     var body:Dictionary<String, AnyObject> = [
-      "ref": self.convertRef(snapshot.ref),
-      "exists": snapshot.exists(),
-      "childrenCount": snapshot.childrenCount,
-      "hasChildren": snapshot.hasChildren(),
-      "uuid": snapshotUUID.UUIDString,
+      "ref": self.convertRef(snapshot.ref) as AnyObject,
+      "exists": snapshot.exists() as AnyObject,
+      "childrenCount": snapshot.childrenCount as AnyObject,
+      "hasChildren": snapshot.hasChildren() as AnyObject,
+      "uuid": snapshotUUID.uuidString as AnyObject,
     ]
     if let priority = snapshot.priority {
-      body["priority"] = priority
+      body["priority"] = priority as AnyObject?
     }
     return body
   }
   
-  @objc func snapshotChild(snapshotUUID: String, path: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
-      let childSnapshot = snapshot.childSnapshotForPath(path)
+  @objc func snapshotChild(_ snapshotUUID: String, path: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let snapshot = self.snapshotCache.object(forKey: snapshotUUID as AnyObject) as? FIRDataSnapshot {
+      let childSnapshot = snapshot.childSnapshot(forPath: path)
       resolve(cacheSnapshotAndConvert(childSnapshot))
     } else {
       reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   
-  @objc func snapshotHasChild(snapshotUUID: String, path: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+  @objc func snapshotHasChild(_ snapshotUUID: String, path: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let snapshot = self.snapshotCache.object(forKey: snapshotUUID as AnyObject) as? FIRDataSnapshot {
       resolve(snapshot.hasChild(path))
     } else {
       reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   
-  @objc func releaseSnapshot(snapshotUUID: String) {
-    self.snapshotCache.removeObjectForKey(snapshotUUID)
+  @objc func releaseSnapshot(_ snapshotUUID: String) {
+    self.snapshotCache.removeObject(forKey: snapshotUUID as AnyObject)
   }
   
-  @objc func snapshotValue(snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+  @objc func snapshotValue(_ snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let snapshot = self.snapshotCache.object(forKey: snapshotUUID as AnyObject) as? FIRDataSnapshot {
       resolve(snapshot.value)
     } else {
       reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   
-  @objc func snapshotKey(snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+  @objc func snapshotKey(_ snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let snapshot = self.snapshotCache.object(forKey: snapshotUUID as AnyObject) as? FIRDataSnapshot {
       resolve(snapshot.key)
     } else {
       reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   
-  @objc func snapshotExportValue(snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+  @objc func snapshotExportValue(_ snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    if let snapshot = self.snapshotCache.object(forKey: snapshotUUID as AnyObject) as? FIRDataSnapshot {
       resolve(snapshot.valueInExportFormat())
     } else {
       reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }
   }
   
-  @objc func snapshotChildren(snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-     if let snapshot = self.snapshotCache.objectForKey(snapshotUUID) as? FIRDataSnapshot {
+  @objc func snapshotChildren(_ snapshotUUID: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+     if let snapshot = self.snapshotCache.object(forKey: snapshotUUID as AnyObject) as? FIRDataSnapshot {
       resolve(snapshot.children.map({self.cacheSnapshotAndConvert($0 as! FIRDataSnapshot)}))
     } else {
       reject("snapshot_not_found", "Snapshot not found; it may have been released.", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
@@ -107,7 +107,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   
   var databaseEventHandles = Dictionary<String, (FIRDatabaseQuery, FIRDatabaseHandle)>();
   
-  @objc func onRef(appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]]) throws -> FIRDatabaseQuery {
+  @objc func onRef(_ appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]]) throws -> FIRDatabaseQuery {
     var ref:FIRDatabaseQuery = try getRefFromUrl(appName, databaseUrl: databaseUrl)
     for queryDescriptor in query {
       // Each query is array; first element is function name and rest
@@ -116,7 +116,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
       let paramCount = queryDescriptor.count - 1
       switch (fnName) {
       case "orderByChild":
-        ref = ref.queryOrderedByChild(queryDescriptor[1] as! String)
+        ref = ref.queryOrdered(byChild: queryDescriptor[1] as! String)
       case "orderByKey":
         ref = ref.queryOrderedByKey()
       case "orderByPriority":
@@ -125,28 +125,28 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
         ref = ref.queryOrderedByValue()
       case "startAt":
         if (paramCount == 2) {
-          ref = ref.queryStartingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+          ref = ref.queryStarting(atValue: queryDescriptor[1], childKey: queryDescriptor[2] as? String)
         } else {
-          ref = ref.queryStartingAtValue(queryDescriptor[1])
+          ref = ref.queryStarting(atValue: queryDescriptor[1])
         }
       case "endAt":
         if (paramCount == 2) {
-          ref = ref.queryEndingAtValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+          ref = ref.queryEnding(atValue: queryDescriptor[1], childKey: queryDescriptor[2] as? String)
         } else {
-          ref = ref.queryEndingAtValue(queryDescriptor[1])
+          ref = ref.queryEnding(atValue: queryDescriptor[1])
         }
       case "equalTo":
         if (paramCount == 2) {
-          ref = ref.queryEqualToValue(queryDescriptor[1], childKey: queryDescriptor[2] as? String)
+          ref = ref.queryEqual(toValue: queryDescriptor[1], childKey: queryDescriptor[2] as? String)
         } else {
-          ref = ref.queryEqualToValue(queryDescriptor[1])
+          ref = ref.queryEqual(toValue: queryDescriptor[1])
         }
       case "limitToFirst":
-        ref = ref.queryLimitedToFirst(queryDescriptor[1] as! UInt)
+        ref = ref.queryLimited(toFirst: queryDescriptor[1] as! UInt)
       case "limitToLast":
-        ref = ref.queryLimitedToLast(queryDescriptor[1] as! UInt)
+        ref = ref.queryLimited(toLast: queryDescriptor[1] as! UInt)
       default:
-        throw FirebaseBridgeError.UnknownQueryFunction(fnName: fnName)
+        throw FirebaseBridgeError.unknownQueryFunction(fnName: fnName)
       }
     }
     return ref;
@@ -159,28 +159,28 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   
   // Setup event subscription. eventTypeString should match one of JsDataEventType.
   // Can't use @objc with string enums so we manually init it below.
-  @objc func once(appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func once(_ appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     do {
       let ref = try onRef(appName, databaseUrl: databaseUrl, eventTypeString: eventTypeString, query: query);
       
       if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
-        let uniqueEventName = NSUUID.init()
-        resolve(uniqueEventName.UUIDString)
-        ref.observeSingleEventOfType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
-          self.sendEventWithName("databaseOn", body: [
-            "id": uniqueEventName.UUIDString,
+        let uniqueEventName = UUID.init()
+        resolve(uniqueEventName.uuidString)
+        ref.observeSingleEvent(of: jsEventTypeMapping[eventType]!, with: { snapshot in
+          self.sendEvent(withName: "databaseOn", body: [
+            "id": uniqueEventName.uuidString,
             "snapshot": self.cacheSnapshotAndConvert(snapshot),
           ])
-        }, withCancelBlock: { error in
-          self.sendEventWithName("databaseOn", body: [
-            "id": uniqueEventName.UUIDString,
+        }, withCancel: { error in
+          self.sendEvent(withName: "databaseOn", body: [
+            "id": uniqueEventName.uuidString,
             "error": error.localizedDescription,
             ]);
         })
       } else {
         reject("unknown_event", "Unknown event type provided \(eventTypeString)", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
       }
-    } catch FirebaseBridgeError.UnknownQueryFunction(let fnName) {
+    } catch FirebaseBridgeError.unknownQueryFunction(let fnName) {
       reject("invalid_query", "Unknown query function \(fnName)",
              NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     } catch let unknownError {
@@ -191,32 +191,32 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
 
   // Setup event subscription. eventTypeString should match one of JsDataEventType.
   // Can't use @objc with string enums so we manually init it below.
-  @objc func on(appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func on(_ appName: String, databaseUrl: String?, eventTypeString:String, query: [[AnyObject]], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     do {
       let ref = try onRef(appName, databaseUrl: databaseUrl, eventTypeString: eventTypeString, query: query);
       
       if let eventType = JsDataEventType.init(rawValue: eventTypeString) {
-        let uniqueEventName = NSUUID.init()
-        resolve(uniqueEventName.UUIDString)
-        let handle = ref.observeEventType(jsEventTypeMapping[eventType]!, withBlock: { snapshot in
-          self.sendEventWithName("databaseOn", body: [
-            "id": uniqueEventName.UUIDString,
+        let uniqueEventName = UUID.init()
+        resolve(uniqueEventName.uuidString)
+        let handle = ref.observe(jsEventTypeMapping[eventType]!, with: { snapshot in
+          self.sendEvent(withName: "databaseOn", body: [
+            "id": uniqueEventName.uuidString,
             "snapshot": self.cacheSnapshotAndConvert(snapshot),
             ]
           )
-          }, withCancelBlock: { error in
-            self.sendEventWithName("databaseOn", body: [
-              "id": uniqueEventName.UUIDString,
+          }, withCancel: { error in
+            self.sendEvent(withName: "databaseOn", body: [
+              "id": uniqueEventName.uuidString,
               "error": error.localizedDescription,
               ]);
           }
         )
         
-        self.databaseEventHandles[uniqueEventName.UUIDString] = (ref, handle)
+        self.databaseEventHandles[uniqueEventName.uuidString] = (ref, handle)
       } else {
         reject("unknown_event", "Unknown event type provided \(eventTypeString)", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
       }
-    } catch FirebaseBridgeError.UnknownQueryFunction(let fnName) {
+    } catch FirebaseBridgeError.unknownQueryFunction(let fnName) {
       reject("invalid_query", "Unknown query function \(fnName)",
              NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     } catch let unknownError {
@@ -225,13 +225,13 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
     }
   }
 
-  @objc func off(uniqueEventName:String) {
+  @objc func off(_ uniqueEventName:String) {
     if let (ref, handle) = databaseEventHandles[uniqueEventName] {
-      ref.removeObserverWithHandle(handle)
+      ref.removeObserver(withHandle: handle)
     }
   }
   
-  func convertRef(ref:FIRDatabaseReference) -> Dictionary<String, String> {
+  func convertRef(_ ref:FIRDatabaseReference) -> Dictionary<String, String> {
     return [
       "key": ref.key,
       "locationUrl": ref.description()
@@ -239,27 +239,27 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   }
   
   
-  func getRefFromUrl(appName: String, databaseUrl: String?) throws -> FIRDatabaseReference {
+  func getRefFromUrl(_ appName: String, databaseUrl: String?) throws -> FIRDatabaseReference {
     if let app = FIRApp(named: appName) {
       let database = FIRDatabase.database(app: app)
-      if let url = databaseUrl where !url.isEmpty {
-        return database.referenceFromURL(url)
+      if let url = databaseUrl, !url.isEmpty {
+        return database.reference(fromURL: url)
       }
       return database.reference()
     } else {
-      throw FirebaseBridgeError.AppNotFound(appName: appName)
+      throw FirebaseBridgeError.appNotFound(appName: appName)
     }
   }
   
-  func getRefRomUrl(appName: String,
+  func getRefRomUrl(_ appName: String,
                     databaseUrl: String?,
-                    success: (ref: FIRDatabaseReference) -> Void,
+                    success: (_ ref: FIRDatabaseReference) -> Void,
                     rejecter reject: RCTPromiseRejectBlock)
   {
     do {
       let ref = try getRefFromUrl(appName, databaseUrl: databaseUrl)
-      success(ref: ref)
-    } catch FirebaseBridgeError.AppNotFound(let appName) {
+      success(ref)
+    } catch FirebaseBridgeError.appNotFound(let appName) {
       reject("unknown_app", "Unknown app \(appName)",
              NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     } catch let unknownError {
@@ -268,7 +268,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func child(appName: String, databaseUrl: String?, path:String,
+  @objc func child(_ appName: String, databaseUrl: String?, path:String,
                    resolver resolve: RCTPromiseResolveBlock,
                    rejecter reject: RCTPromiseRejectBlock)
   {
@@ -280,7 +280,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   }
   
   
-  @objc func push(appName: String, databaseUrl: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func push(_ appName: String, databaseUrl: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
                   resolve(self.convertRef(ref.childByAutoId()))
@@ -289,7 +289,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   }
   
   // We receive an array of a single element whh is the value to set
-  @objc func update(appName: String, databaseUrl: String, value:Dictionary<String, AnyObject>, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func update(_ appName: String, databaseUrl: String, value:Dictionary<String, AnyObject>, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
                   ref.updateChildValues(value, withCompletionBlock: {(error, ref) in
@@ -304,9 +304,9 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   }
   
   // We receive an array of a single element which is the value to set
-  @objc func setValue(appName: String, databaseUrl: String, value:[AnyObject],
-                      resolver resolve: RCTPromiseResolveBlock,
-                      rejecter reject: RCTPromiseRejectBlock) {
+  @objc func setValue(_ appName: String, databaseUrl: String, value:[AnyObject],
+                      resolver resolve: @escaping RCTPromiseResolveBlock,
+                      rejecter reject: @escaping RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
                   ref.setValue(value[0], withCompletionBlock: {(error, ref) in
@@ -320,7 +320,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
                  rejecter: reject)
   }
   
-  @objc func setValueWithPriority(appName: String, databaseUrl: String, value:[AnyObject], priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func setValueWithPriority(_ appName: String, databaseUrl: String, value:[AnyObject], priority:[AnyObject], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
                   ref.setValue(value[0], andPriority: priority[0],
@@ -336,7 +336,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
   }
   
   
-  @objc func setPriority(appName: String, databaseUrl: String, priority:[AnyObject], resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func setPriority(_ appName: String, databaseUrl: String, priority:[AnyObject], resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
                   ref.setPriority(priority[0], withCompletionBlock: {(error, ref) in
@@ -350,10 +350,10 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
                  rejecter: reject)
   }
   
-  @objc func removeValue(appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func removeValue(_ appName: String, databaseUrl: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
-                  ref.removeValueWithCompletionBlock { (error, ref) in
+                  ref.removeValue { (error, ref) in
                     if (error != nil) {
                       reject("remove_value_failed", error?.localizedDescription, error)
                     } else {
@@ -364,21 +364,21 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
                  rejecter: reject)
   }
   
-  @objc func refFromURL(appName: String, url: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func refFromURL(_ appName: String, url: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     if let app = FIRApp(named: appName) {
         let database = FIRDatabase.database(app: app)
-        let ref = database.referenceFromURL(url)
+        let ref = database.reference(fromURL: url)
         resolve(convertRef(ref))
     } else {
         reject("app_not_found", "App with name \(appName) not found", NSError(domain: "FirebaseBridgeDatabase", code: 0, userInfo: nil));
     }  }
   
-  @objc func ref(appName: String, path: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func ref(_ appName: String, path: String?, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     var ref:FIRDatabaseReference
     if let app = FIRApp(named: appName) {
       let database = FIRDatabase.database(app: app)
-      if let path = path where path != "" {
-        ref = database.referenceWithPath(path)
+      if let path = path, path != "" {
+        ref = database.reference(withPath: path)
       } else {
         ref = database.reference()
       }
@@ -388,7 +388,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func parent(appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func parent(_ appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
                   if let parent = ref.parent {
@@ -400,7 +400,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
                  rejecter: reject)
   }
   
-  @objc func root(appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func root(_ appName: String, databaseUrl: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     getRefRomUrl(appName, databaseUrl: databaseUrl,
                  success: { (ref) -> Void in
                   resolve(self.convertRef(ref.root))
@@ -408,7 +408,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
                  rejecter: reject)
   }
   
-  @objc func setPersistenceEnabled(appName: String, enabled:Bool) {
+  @objc func setPersistenceEnabled(_ appName: String, enabled:Bool) {
     if let app = FIRApp(named: appName) {
         let database = FIRDatabase.database(app: app)
         if (database.persistenceEnabled != enabled) {
@@ -419,15 +419,15 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func enableLogging(enabled:Bool) {
+  @objc func enableLogging(_ enabled:Bool) {
     FIRDatabase.setLoggingEnabled(enabled)
   }
   
-  @objc func sdkVersion(resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func sdkVersion(_ resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     resolve(FIRDatabase.sdkVersion());
   }
     
-    @objc func goOffline(appName: String) {
+    @objc func goOffline(_ appName: String) {
         if let app = FIRApp(named: appName) {
             let database = FIRDatabase.database(app: app)
             database.goOffline()
@@ -437,7 +437,7 @@ class FirebaseBridgeDatabase: RCTEventEmitter, RCTInvalidating {
     }
 
     
-    @objc func goOnline(appName: String) {
+    @objc func goOnline(_ appName: String) {
         if let app = FIRApp(named: appName) {
             let database = FIRDatabase.database(app: app)
             database.goOnline()

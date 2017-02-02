@@ -15,8 +15,8 @@ class FirebaseBridgeFacebookAuthProvider : NSObject {
     super.init()
   }
   
-  @objc func credential(token:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
-    let credential = FIRFacebookAuthProvider.credentialWithAccessToken(token)
+  @objc func credential(_ token:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+    let credential = FIRFacebookAuthProvider.credential(withAccessToken: token)
     resolve([
       "id": FirebaseBridgeCredentialCache.addCredential(credential),
       "provider": credential.provider,

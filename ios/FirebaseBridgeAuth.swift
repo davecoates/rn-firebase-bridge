@@ -6,77 +6,83 @@
 
 import Firebase
 
-func userToDict(user:FIRUser) -> Dictionary<String, AnyObject> {
+func userToDict(_ user:FIRUser) -> Dictionary<String, AnyObject> {
   var data:Dictionary<String, AnyObject> = [
-    "uid": user.uid,
-    "emailVerified": user.emailVerified,
-    "isAnonymous": user.anonymous,
-    "providerId": user.providerID,
+    "uid": user.uid as AnyObject,
+    "emailVerified": user.isEmailVerified as AnyObject,
+    "isAnonymous": user.isAnonymous as AnyObject,
+    "providerId": user.providerID as AnyObject,
   ]
   if let email = user.email {
-    data["email"] = email
+    data["email"] = email as AnyObject?
   }
   if let displayName = user.displayName {
-    data["displayName"] = displayName
+    data["displayName"] = displayName as AnyObject?
   }
   if let photoURL = user.photoURL {
-    data["photoURL"] = photoURL.absoluteString
+    data["photoURL"] = photoURL.absoluteString as AnyObject?
   }
   
   return data
 }
 
-func authErrorCodeToString(code:FIRAuthErrorCode) -> String {
+func authErrorCodeToString(_ code:FIRAuthErrorCode) -> String {
   switch (code) {
-  case .ErrorCodeUserDisabled:
+  case .errorCodeUserDisabled:
     return "auth/user-disabled"
-  case .ErrorCodeInvalidEmail:
+  case .errorCodeInvalidEmail:
     return "auth/invalid-email"
-  case .ErrorCodeWrongPassword:
+  case .errorCodeWrongPassword:
     return "auth/wrong-password"
-  case .ErrorCodeUserNotFound:
+  case .errorCodeUserNotFound:
     return "auth/user-not-found"
-  case .ErrorCodeAppNotAuthorized:
+  case .errorCodeAppNotAuthorized:
     return "auth/app-not-authorized"
-  case .ErrorCodeCredentialAlreadyInUse:
+  case .errorCodeCredentialAlreadyInUse:
     return "auth/credential-already-in-use"
-  case .ErrorCodeInvalidCustomToken:
+  case .errorCodeInvalidCustomToken:
     return "auth/invalid-custom-token"
-  case .ErrorCodeCustomTokenMismatch:
+  case .errorCodeCustomTokenMismatch:
     return "auth/custom-token-mismatch"
-  case .ErrorCodeEmailAlreadyInUse:
+  case .errorCodeEmailAlreadyInUse:
     return "auth/email-already-in-use"
-  case .ErrorCodeInvalidAPIKey:
+  case .errorCodeInvalidAPIKey:
     return "auth/invalid-api-key"
-  case .ErrorCodeInvalidCredential:
+  case .errorCodeInvalidCredential:
     return "auth/invalid-credential"
-  case .ErrorCodeInvalidUserToken:
+  case .errorCodeInvalidUserToken:
     return "auth/invalid-user-token"
-  case .ErrorCodeNetworkError:
+  case .errorCodeNetworkError:
     return "auth/network-request-failed"
-  case .ErrrorCodeAccountExistsWithDifferentCredential:
+  case .errorCodeAccountExistsWithDifferentCredential:
+    fallthrough
+  case .errorCodeAccountExistsWithDifferentCredential:
     return "auth/account-exists-with-different-credential"
-  case .ErrorCodeWeakPassword:
+  case .errorCodeWeakPassword:
     return "auth/weak-password"
-  case .ErrorCodeTooManyRequests:
+  case .errorCodeTooManyRequests:
     return "auth/too-many-requests"
-  case .ErrorCodeOperationNotAllowed:
+  case .errorCodeOperationNotAllowed:
     return "auth/operation-not-allowed"
-  case .ErrorCodeRequiresRecentLogin:
+  case .errorCodeRequiresRecentLogin:
     return "auth/requires-recent-login"
-  case .ErrorCodeUserTokenExpired:
+  case .errorCodeUserTokenExpired:
     return "auth/user-token-expired"
   // These codes don't have equivalent in javascript API
-  case .ErrorCodeInternalError:
+  case .errorCodeInternalError:
     return "auth/internal-error"
-  case .ErrorCodeUserMismatch:
+  case .errorCodeUserMismatch:
     return "auth/user-mismatch"
-  case .ErrorCodeKeychainError:
+  case .errorCodeKeychainError:
     return "auth/keychain-error"
-  case .ErrorCodeProviderAlreadyLinked:
+  case .errorCodeProviderAlreadyLinked:
     return "auth/provider-already-linked"
-  case .ErrorCodeNoSuchProvider:
+  case .errorCodeNoSuchProvider:
     return "auth/no-such-provider"
+  case .errorCodeInvalidActionCode:
+    return "auth/invalid-action-code"
+  case .errorCodeExpiredActionCode:
+    return "auth/expired-action-code"
   }
 }
 
@@ -87,7 +93,7 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
   func invalidate() {
     self.authStateDidChangeListenerHandles.forEach { (appName, handle) in
       do {
-        try self.getAuthInstance(appName)?.removeAuthStateDidChangeListener(handle)
+        try self.getAuthInstance(appName)?.removeStateDidChangeListener(handle)
       } catch let unknownError {
         print("Failed to cleanup auth listeners for \(appName)", unknownError)
       }
@@ -102,14 +108,14 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     return ["authStateDidChange"]
   }
   
-  func getAuthInstance(appName:String) throws -> FIRAuth? {
+  func getAuthInstance(_ appName:String) throws -> FIRAuth? {
      if let app = FIRApp(named: appName) {
       return FIRAuth(app:app)
     }
-    throw FirebaseBridgeError.AppNotFound(appName: appName)
+    throw FirebaseBridgeError.appNotFound(appName: appName)
   }
   
-  private func reject(reject: RCTPromiseRejectBlock, error: NSError) {
+  fileprivate func reject(_ reject: RCTPromiseRejectBlock, error: NSError) {
     var code = ""
     if let errorCode = FIRAuthErrorCode(rawValue: error.code) {
       code = authErrorCodeToString(errorCode)
@@ -122,19 +128,19 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
   
   var authStateDidChangeListenerHandles = Dictionary<String, FIRAuthStateDidChangeListenerHandle>();
   
-  @objc func addAuthStateDidChangeListener(appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func addAuthStateDidChangeListener(_ appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     do {
       let auth = try self.getAuthInstance(appName)
-      let handle = auth?.addAuthStateDidChangeListener({ (auth:FIRAuth, user) in
+      let handle = auth?.addStateDidChangeListener({ (auth:FIRAuth, user) in
         var userDict:Dictionary<String, AnyObject>? = nil
         if let user = user {
           userDict = userToDict(user)
         }
         let body:Dictionary<String, AnyObject> = [
-          "app": appName,
-          "user": userDict ?? false
+          "app": appName as AnyObject,
+          "user": userDict as AnyObject? ?? false as AnyObject
         ]
-        self.sendEventWithName("authStateDidChange", body: body)
+        self.sendEvent(withName: "authStateDidChange", body: body)
       })
       resolve(nil)
       authStateDidChangeListenerHandles[appName] = handle;
@@ -147,14 +153,14 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func createUserWithEmail(appName: String, email:String, password:String,
-                                 resolver resolve: RCTPromiseResolveBlock,
-                                 rejecter reject: RCTPromiseRejectBlock)
+  @objc func createUserWithEmail(_ appName: String, email:String, password:String,
+                                 resolver resolve: @escaping RCTPromiseResolveBlock,
+                                 rejecter reject: @escaping RCTPromiseRejectBlock)
   {
     do {
-      try self.getAuthInstance(appName)?.createUserWithEmail(email, password: password) { (user, error) in
+      try self.getAuthInstance(appName)?.createUser(withEmail: email, password: password) { (user, error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         
@@ -169,11 +175,11 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func signInWithEmail(appName: String, email:String, password:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func signInWithEmail(_ appName: String, email:String, password:String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     do {
-      try self.getAuthInstance(appName)?.signInWithEmail(email, password: password) { (user, error) in
+      try self.getAuthInstance(appName)?.signIn(withEmail: email, password: password) { (user, error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         
@@ -188,11 +194,11 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func signInAnonymously(appName:String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func signInAnonymously(_ appName:String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     do {
-      try self.getAuthInstance(appName)?.signInAnonymouslyWithCompletion() { (user, error) in
+      try self.getAuthInstance(appName)?.signInAnonymously() { (user, error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(userToDict(user!));
@@ -206,12 +212,12 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func signInWithCredential(appName:String, credentialId: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func signInWithCredential(_ appName:String, credentialId: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     do {
       let credential = try FirebaseBridgeCredentialCache.getCredential(credentialId)
-      try self.getAuthInstance(appName)?.signInWithCredential(credential, completion: { (user, error) in
+      try self.getAuthInstance(appName)?.signIn(with: credential, completion: { (user, error) in
         if let error = error {
-          self.reject(reject, error: error)
+          self.reject(reject, error: error as NSError)
           return;
         }
         resolve(userToDict(user!));
@@ -225,7 +231,7 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
   
-  @objc func signOut(appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func signOut(_ appName: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
     do {
       try self.getAuthInstance(appName)?.signOut();
       resolve(nil)
@@ -238,11 +244,11 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
     
-  @objc func sendPasswordResetEmail(appName: String, email: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func sendPasswordResetEmail(_ appName: String, email: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     do {
-        try self.getAuthInstance(appName)?.sendPasswordResetWithEmail(email, completion: { (error) in
+        try self.getAuthInstance(appName)?.sendPasswordReset(withEmail: email, completion: { (error) in
             if let error = error {
-                self.reject(reject, error: error)
+                self.reject(reject, error: error as NSError)
             } else {
                 resolve(nil)
             }
@@ -256,11 +262,11 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
     
-  @objc func fetchProvidersForEmail(appName: String, email: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func fetchProvidersForEmail(_ appName: String, email: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     do {
-        try self.getAuthInstance(appName)?.fetchProvidersForEmail(email, completion: { (providers, error) in
+        try self.getAuthInstance(appName)?.fetchProviders(forEmail: email, completion: { (providers, error) in
             if let error = error {
-                self.reject(reject, error: error)
+                self.reject(reject, error: error as NSError)
             } else {
                 resolve(providers)
             }
@@ -274,11 +280,11 @@ class FirebaseBridgeAuth: RCTEventEmitter, RCTInvalidating {
     }
   }
     
-  @objc func signInWithCustomToken(appName: String, token: String, resolver resolve: RCTPromiseResolveBlock, rejecter reject: RCTPromiseRejectBlock) {
+  @objc func signInWithCustomToken(_ appName: String, token: String, resolver resolve: @escaping RCTPromiseResolveBlock, rejecter reject: @escaping RCTPromiseRejectBlock) {
     do {
-        try self.getAuthInstance(appName)?.signInWithCustomToken(token, completion: { (user, error) in
+        try self.getAuthInstance(appName)?.signIn(withCustomToken: token, completion: { (user, error) in
             if let error = error {
-                self.reject(reject, error: error)
+                self.reject(reject, error: error as NSError)
                 return;
             }
             resolve(userToDict(user!));
